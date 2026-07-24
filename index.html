@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معراج - نظام إدارة المبيعات</title>
+    
+    <!-- Bootstrap RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+    <!-- Login Page -->
+    <div id="loginPage" class="container-fluid">
+        <div class="row min-vh-100 align-items-center justify-content-center">
+            <div class="col-md-4 col-lg-3">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h1 class="brand-logo text-gold">
+                                <i class="fas fa-mountain"></i> معراج
+                            </h1>
+                            <p class="text-muted">نظام إدارة المبيعات المتكامل</p>
+                        </div>
+                        
+                        <div class="d-grid gap-3">
+                            <button class="btn btn-google btn-lg" onclick="handleGoogleLogin()">
+                                <i class="fab fa-google me-2"></i>
+                                تسجيل الدخول باستخدام جوجل
+                            </button>
+                            
+                            <hr class="my-3">
+                            
+                            <div class="text-center">
+                                <small class="text-muted">
+                                    هل لديك حساب؟ 
+                                    <a href="#" class="text-gold text-decoration-none">تسجيل جديد</a>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (Hidden by default) -->
+    <div id="mainApp" class="d-none">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar bg-dark">
+            <div class="sidebar-header">
+                <h3 class="text-gold">
+                    <i class="fas fa-mountain"></i> معراج
+                </h3>
+            </div>
+            
+            <ul class="list-unstyled components">
+                <li class="active">
+                    <a href="#dashboard" data-page="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        لوحة التحكم
+                    </a>
+                </li>
+                <li>
+                    <a href="#customers" data-page="customers">
+                        <i class="fas fa-users"></i>
+                        إدارة العملاء
+                    </a>
+                </li>
+                <li>
+                    <a href="#orders" data-page="orders">
+                        <i class="fas fa-shopping-cart"></i>
+                        إدارة الطلبات
+                    </a>
+                </li>
+                <li>
+                    <a href="#reports" data-page="reports">
+                        <i class="fas fa-chart-bar"></i>
+                        التقارير
+                    </a>
+                </li>
+                <li class="admin-only d-none">
+                    <a href="#admin" data-page="admin">
+                        <i class="fas fa-cogs"></i>
+                        إدارة النظام
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <button class="btn btn-link text-white" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    تسجيل الخروج
+                </button>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content" class="main-content">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-outline-dark">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div class="ms-auto d-flex align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle fa-lg"></i>
+                                <span id="userName" class="ms-2">مستخدم</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page-content active">
+                <div class="container-fluid py-4">
+                    <h2 class="mb-4">لوحة التحكم</h2>
+                    
+                    <!-- Stats Cards -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-3">
+                            <div class="card stat-card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title mb-2">إجمالي المبيعات</h6>
+                                            <h3 class="mb-0" id="totalSales">0 ر.س</h3>
+                                        </div>
+                                        <i class="fas fa-dollar-sign fa-3x opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="card stat-card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title mb-2">الأرباح</h6>
+                                            <h3 class="mb-0" id="totalProfit">0 ر.س</h3>
+                                        </div>
+                                        <i class="fas fa-chart-line fa-3x opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="card stat-card bg-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title mb-2">الطلبات</h6>
+                                            <h3 class="mb-0" id="totalOrders">0</h3>
+                                        </div>
+                                        <i class="fas fa-shopping-bag fa-3x opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="card stat-card bg-warning text-dark">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title mb-2">العملاء</h6>
+                                            <h3 class="mb-0" id="totalCustomers">0</h3>
+                                        </div>
+                                        <i class="fas fa-users fa-3x opacity-50"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">آخر العمليات</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>التاريخ</th>
+                                                    <th>النوع</th>
+                                                    <th>التفاصيل</th>
+                                                    <th>المبلغ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="recentActivity">
+                                                <!-- Dynamic content -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-white">
+                                    <h5 class="mb-0">الإشعارات</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="notificationsList">
+                                        <!-- Dynamic notifications -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Page -->
+            <div id="customersPage" class="page-content d-none">
+                <div class="container-fluid py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>إدارة العملاء</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                            <i class="fas fa-plus"></i> إضافة عميل
+                        </button>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="customerSearch" placeholder="بحث بالاسم أو الهاتف...">
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="customerStatusFilter">
+                                        <option value="">جميع الحالات</option>
+                                        <option value="active">نشط</option>
+                                        <option value="inactive">غير نشط</option>
+                                        <option value="blocked">محظور</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="customerCountryFilter">
+                                        <option value="">جميع الدول</option>
+                                        <!-- Dynamic countries -->
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-filter"></i> فلترة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Customers Table -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>الاسم</th>
+                                            <th>الهاتف</th>
+                                            <th>البريد</th>
+                                            <th>الدولة</th>
+                                            <th>الحالة</th>
+                                            <th>إجمالي الطلبات</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customersTableBody">
+                                        <!-- Dynamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Page -->
+            <div id="ordersPage" class="page-content d-none">
+                <div class="container-fluid py-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>إدارة الطلبات</h2>
+                        <div>
+                            <button class="btn btn-success me-2" onclick="syncEmails()">
+                                <i class="fas fa-sync"></i> مزامنة من البريد
+                            </button>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrderModal">
+                                <i class="fas fa-plus"></i> إضافة طلب
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Sync Status -->
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-envelope me-2"></i>
+                            <span>البريد الإلكتروني للمزامنة: <strong id="syncEmail">لم يتم الإعداد</strong></span>
+                            <button class="btn btn-sm btn-outline-primary me-auto" data-bs-toggle="modal" data-bs-target="#emailConfigModal">
+                                <i class="fas fa-cog"></i> إعدادات
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <input type="text" class="form-control" id="orderSearch" placeholder="بحث برقم الطلب...">
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-select" id="orderStoreFilter">
+                                        <option value="">جميع المتاجر</option>
+                                        <option value="shein">SHEIN</option>
+                                        <option value="temu">TEMU</option>
+                                        <option value="amazon">AMAZON</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <select class="form-select" id="orderStatusFilter">
+                                        <option value="">جميع الحالات</option>
+                                        <option value="pending">قيد المعالجة</option>
+                                        <option value="sold">تم البيع</option>
+                                        <option value="cancelled">ملغي</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" class="form-control" id="orderDateFrom">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" class="form-control" id="orderDateTo">
+                                </div>
+                                <div class="col-md-1">
+                                    <button class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-filter"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Orders Table -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>رقم الطلب</th>
+                                            <th>المتجر</th>
+                                            <th>المنتج</th>
+                                            <th>سعر الشراء</th>
+                                            <th>سعر البيع</th>
+                                            <th>العملة</th>
+                                            <th>العميل</th>
+                                            <th>الحالة</th>
+                                            <th>الإجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ordersTableBody">
+                                        <!-- Dynamic content -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reportsPage" class="page-content d-none">
+                <div class="container-fluid py-4">
+                    <h2 class="mb-4">التقارير</h2>
+                    
+                    <!-- Report Filters -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">نوع التقرير</label>
+                                    <select class="form-select" id="reportType">
+                                        <option value="sales">تقرير المبيعات</option>
+                                        <option value="profit">تقرير الأرباح</option>
+                                        <option value="customers">تقرير العملاء</option>
+                                        <option value="products">تقرير المنتجات</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">من تاريخ</label>
+                                    <input type="date" class="form-control" id="reportDateFrom">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">إلى تاريخ</label>
+                                    <input type="date" class="form-control" id="reportDateTo">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">المتجر</label>
+                                    <select class="form-select" id="reportStore">
+                                        <option value="">جميع المتاجر</option>
+                                        <option value="shein">SHEIN</option>
+                                        <option value="temu">TEMU</option>
+                                        <option value="amazon">AMAZON</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">العملة</label>
+                                    <select class="form-select" id="reportCurrency">
+                                        <option value="">جميع العملات</option>
+                                        <option value="SAR">ريال سعودي</option>
+                                        <option value="USD">دولار أمريكي</option>
+                                        <option value="EUR">يورو</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button class="btn btn-primary w-100" onclick="generateReport()">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Report Results -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">نتائج التقرير</h5>
+                                    <div>
+                                        <button class="btn btn-success btn-sm me-2" onclick="exportToExcel()">
+                                            <i class="fas fa-file-excel"></i> Excel
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="exportToPDF()">
+                                            <i class="fas fa-file-pdf"></i> PDF
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="reportResults">
+                                        <!-- Dynamic report content -->
+                                        <div class="text-center text-muted py-5">
+                                            <i class="fas fa-chart-bar fa-4x mb-3"></i>
+                                            <p>اختر معايير التقرير واضغط على عرض</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Page -->
+            <div id="adminPage" class="page-content d-none">
+                <div class="container-fluid py-4">
+                    <h2 class="mb-4">إدارة النظام</h2>
+                    
+                    <!-- Admin Tabs -->
+                    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adminDashboard">
+                                <i class="fas fa-tachometer-alt"></i> لوحة التحكم
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminUsers">
+                                <i class="fas fa-users"></i> المستخدمين
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminSubscriptions">
+                                <i class="fas fa-star"></i> الاشتراكات
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminOperations">
+                                <i class="fas fa-list"></i> العمليات
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adminSettings">
+                                <i class="fas fa-cog"></i> الإعدادات
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content">
+                        <!-- Admin Dashboard Tab -->
+                        <div class="tab-pane fade show active" id="adminDashboard">
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-3">
+                                    <div class="card stat-card bg-primary text-white">
+                                        <div class="card-body">
+                                            <h6>إجمالي المشتركين</h6>
+                                            <h3 id="adminTotalUsers">0</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stat-card bg-success text-white">
+                                        <div class="card-body">
+                                            <h6>الإيرادات الشهرية</h6>
+                                            <h3 id="adminMonthlyRevenue">0 ر.س</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stat-card bg-info text-white">
+                                        <div class="card-body">
+                                            <h6>الطلبات النشطة</h6>
+                                            <h3 id="adminActiveOrders">0</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stat-card bg-warning text-dark">
+                                        <div class="card-body">
+                                            <h6>معدل النمو</h6>
+                                            <h3 id="adminGrowthRate">0%</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Users Management Tab -->
+                        <div class="tab-pane fade" id="adminUsers">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4>إدارة المستخدمين</h4>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                    <i class="fas fa-plus"></i> إضافة مستخدم
+                                </button>
+                            </div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>الاسم</th>
+                                                    <th>البريد</th>
+                                                    <th>الدور</th>
+                                                    <th>الاشتراك</th>
+                                                    <th>الحالة</th>
+                                                    <th>الإجراءات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="adminUsersTable">
+                                                <!-- Dynamic content -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Subscriptions Tab -->
+                        <div class="tab-pane fade" id="adminSubscriptions">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4>إدارة الباقات</h4>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPackageModal">
+                                    <i class="fas fa-plus"></i> إضافة باقة
+                                </button>
+                            </div>
+                            <div class="row g-4" id="packagesList">
+                                <!-- Dynamic packages -->
+                            </div>
+                        </div>
+                        
+                        <!-- Operations Tab -->
+                        <div class="tab-pane fade" id="adminOperations">
+                            <h4 class="mb-3">سجل العمليات</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>التاريخ</th>
+                                                    <th>المستخدم</th>
+                                                    <th>النوع</th>
+                                                    <th>التفاصيل</th>
+                                                    <th>Request</th>
+                                                    <th>Response</th>
+                                                    <th>الحالة</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="operationsTable">
+                                                <!-- Dynamic content -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Settings Tab -->
+                        <div class="tab-pane fade" id="adminSettings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header bg-white">
+                                            <h5 class="mb-0">إعدادات التطبيق</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <form id="appSettingsForm">
+                                                <div class="mb-3">
+                                                    <label class="form-label">العملات المتاحة</label>
+                                                    <div id="currenciesList">
+                                                        <!-- Dynamic currencies -->
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addCurrency()">
+                                                        <i class="fas fa-plus"></i> إضافة عملة
+                                                    </button>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label class="form-label">أسعار الصرف</label>
+                                                    <div id="exchangeRatesList">
+                                                        <!-- Dynamic exchange rates -->
+                                                    </div>
+                                                </div>
+                                                
+                                                <button type="submit" class="btn btn-primary">حفظ الإعدادات</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header bg-white">
+                                            <h5 class="mb-0">الصلاحيات</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="permissionsList">
+                                                <!-- Dynamic permissions -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Customer Modal -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">إضافة عميل جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCustomerForm">
+                        <div class="mb-3">
+                            <label class="form-label">الاسم الكامل</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="tel" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الدولة</label>
+                            <select class="form-select" required>
+                                <option value="">اختر الدولة</option>
+                                <option value="SA">السعودية</option>
+                                <option value="AE">الإمارات</option>
+                                <option value="EG">مصر</option>
+                                <!-- More countries -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">العنوان</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCustomer()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Order Modal -->
+    <div class="modal fade" id="addOrderModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">إضافة طلب جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addOrderForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">رقم الطلب</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">المتجر</label>
+                                <select class="form-select" required>
+                                    <option value="">اختر المتجر</option>
+                                    <option value="shein">SHEIN</option>
+                                    <option value="temu">TEMU</option>
+                                    <option value="amazon">AMAZON</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">تفاصيل المنتج</label>
+                                <textarea class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">سعر الشراء</label>
+                                <input type="number" step="0.01" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">العملة</label>
+                                <select class="form-select" required>
+                                    <option value="SAR">ريال سعودي</option>
+                                    <option value="USD">دولار أمريكي</option>
+                                    <option value="EUR">يورو</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">سعر البيع</label>
+                                <input type="number" step="0.01" class="form-control">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">ربط بعميل</label>
+                                <select class="form-select" id="orderCustomerSelect">
+                                    <option value="">اختر عميل (اختياري)</option>
+                                    <!-- Dynamic customers -->
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveOrder()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Configuration Modal -->
+    <div class="modal fade" id="emailConfigModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">إعدادات مزامنة البريد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="emailConfigForm">
+                        <div class="mb-3">
+                            <label class="form-label">عنوان البريد الإلكتروني</label>
+                            <input type="email" class="form-control" placeholder="your-email@gmail.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">كلمة المرور للتطبيق</label>
+                            <input type="password" class="form-control" required>
+                            <small class="text-muted">استخدم كلمة مرور التطبيق من إعدادات جوجل</small>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            سيتم استخدام هذا البريد لاستيراد الطلبات من SHEIN وغيره
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEmailConfig()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js for reports -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/app.js"></script>
+</body>
+</html>

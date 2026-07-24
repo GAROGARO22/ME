@@ -1,0 +1,22 @@
+{
+  "name": "meraj-saas",
+  "version": "1.0.0",
+  "description": "معراج - نظام إدارة المبيعات المتكامل للتسويق الاجتماعي",
+  "main": "index.html",
+  "scripts": {
+    "dev": "live-server --port=3000",
+    "build": "echo 'Build complete - ready for Vercel deployment'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "saas",
+    "crm",
+    "ecommerce",
+    "arabic",
+    "firebase"
+  ],
+  "author": "Meraj Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
