@@ -17,6 +17,8 @@
   ],
   "author": "Meraj Team",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "googleapis": "^140.0.0"
+  },
   "devDependencies": {}
 }
