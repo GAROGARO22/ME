@@ -1,0 +1,485 @@
+/* Meraj SaaS - Professional Corporate Design */
+/* Black & Gold Theme */
+
+:root {
+    --primary-black: #000000;
+    --secondary-black: #1a1a1a;
+    --dark-gray: #2d2d2d;
+    --light-gray: #f8f9fa;
+    --gold: #D4AF37;
+    --gold-hover: #b8962e;
+    --gold-light: #f4d03f;
+    --white: #ffffff;
+    --text-dark: #212529;
+    --text-light: #6c757d;
+    --success: #198754;
+    --danger: #dc3545;
+    --info: #0dcaf0;
+    --warning: #ffc107;
+}
+
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-gray);
+    color: var(--text-dark);
+    overflow-x: hidden;
+}
+
+/* RTL Support */
+html[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Brand Colors */
+.text-gold {
+    color: var(--gold) !important;
+}
+
+.bg-gold {
+    background-color: var(--gold) !important;
+}
+
+/* Login Page */
+#loginPage {
+    background: linear-gradient(135deg, var(--primary-black) 0%, var(--secondary-black) 100%);
+}
+
+.brand-logo {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--gold);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-google {
+    background-color: var(--white);
+    color: var(--text-dark);
+    border: 2px solid #ddd;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa;
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Sidebar */
+.sidebar {
+    min-width: 280px;
+    max-width: 280px;
+    min-height: 100vh;
+    background: var(--primary-black);
+    color: var(--white);
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.active {
+    margin-right: -280px;
+}
+
+.sidebar-header {
+    padding: 20px;
+    background: var(--secondary-black);
+    border-bottom: 2px solid var(--gold);
+}
+
+.sidebar-header h3 {
+    font-size: 1.5rem;
+    margin: 0;
+    color: var(--gold);
+}
+
+.sidebar ul.components {
+    padding: 20px 0;
+}
+
+.sidebar ul li {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar ul li a {
+    padding: 15px 25px;
+    display: block;
+    color: var(--white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.sidebar ul li a:hover {
+    background: var(--secondary-black);
+    color: var(--gold);
+    padding-right: 30px;
+}
+
+.sidebar ul li.active > a {
+    background: var(--gold);
+    color: var(--primary-black);
+    font-weight: bold;
+}
+
+.sidebar ul li a i {
+    margin-left: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Main Content */
+.main-content {
+    margin-right: 280px;
+    min-height: 100vh;
+    transition: all 0.3s ease;
+    background: var(--light-gray);
+}
+
+.main-content.active {
+    margin-right: 0;
+}
+
+/* Navbar */
+.navbar {
+    background: var(--white) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: var(--white);
+    border-bottom: 2px solid var(--gold);
+    font-weight: bold;
+}
+
+/* Stat Cards */
+.stat-card {
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.stat-card .card-body {
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card .opacity-50 {
+    opacity: 0.3;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--gold);
+    border-color: var(--gold);
+    color: var(--primary-black);
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: var(--gold-hover);
+    border-color: var(--gold-hover);
+    color: var(--white);
+}
+
+.btn-outline-primary {
+    color: var(--gold);
+    border-color: var(--gold);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--gold);
+    border-color: var(--gold);
+    color: var(--white);
+}
+
+/* Tables */
+.table {
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead {
+    background: var(--secondary-black);
+    color: var(--white);
+}
+
+.table thead th {
+    border: none;
+    padding: 15px;
+    font-weight: 600;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(212, 175, 55, 0.05);
+}
+
+/* Forms */
+.form-control,
+.form-select {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+}
+
+/* Modals */
+.modal-content {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: var(--secondary-black);
+    color: var(--white);
+    border-bottom: 2px solid var(--gold);
+}
+
+.modal-title {
+    color: var(--gold);
+    font-weight: bold;
+}
+
+/* Alerts */
+.alert-info {
+    background-color: rgba(13, 202, 240, 0.1);
+    border: 1px solid var(--info);
+    color: var(--info);
+}
+
+/* Tabs */
+.nav-tabs .nav-link {
+    color: var(--text-dark);
+    border: none;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--gold);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--gold);
+    border-bottom: 3px solid var(--gold);
+    font-weight: bold;
+}
+
+/* Page Content */
+.page-content {
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.page-content.active {
+    display: block;
+}
+
+.page-content.d-none {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .sidebar {
+        margin-right: -280px;
+    }
+    
+    .sidebar.active {
+        margin-right: 0;
+    }
+    
+    .main-content {
+        margin-right: 0;
+    }
+}
+
+/* Loading Spinner */
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner-border-gold {
+    color: var(--gold);
+}
+
+/* Status Badges */
+.badge-success {
+    background-color: var(--success);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.badge-warning {
+    background-color: var(--warning);
+    color: var(--text-dark);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.badge-danger {
+    background-color: var(--danger);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.badge-info {
+    background-color: var(--info);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gold);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-hover);
+}
+
+/* Print Styles */
+@media print {
+    .sidebar,
+    .navbar,
+    .btn,
+    .modal {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin: 0;
+    }
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --light-gray: #1a1a1a;
+        --text-dark: #f8f9fa;
+    }
+    
+    body {
+        background-color: var(--secondary-black);
+    }
+    
+    .card,
+    .table,
+    .navbar {
+        background-color: var(--dark-gray) !important;
+        color: var(--white);
+    }
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Utility Classes */
+.text-small {
+    font-size: 0.85rem;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.shadow-gold {
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+.border-gold {
+    border: 2px solid var(--gold);
+}
