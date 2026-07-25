@@ -126,6 +126,30 @@ function initializeApp() {
     setupEventListeners();
     
     showNotification('تم تسجيل الدخول بنجاح', 'success');
+
+    // ====================================================
+    // تشغيل نافذة الأتمتة الذكية بعد 5 ثوانٍ من تسجيل الدخول
+    // ====================================================
+    const hasSeenModal = localStorage.getItem('meraj_automation_seen');
+    const isGmailConnected = false; // لاحقاً سنجعلها مرتبطة بقاعدة البيانات
+    
+    if (!hasSeenModal && !isGmailConnected) {
+        setTimeout(() => {
+            var myModalEl = document.getElementById('smartAutomationModal');
+            if (myModalEl) {
+                var automationModal = new bootstrap.Modal(myModalEl);
+                automationModal.show();
+            }
+        }, 5000);
+    }
+
+    // حفظ الحدث عند الضغط على زر التخطي أو أي مكان لإغلاق النافذة
+    const smartModal = document.getElementById('smartAutomationModal');
+    if(smartModal) {
+        smartModal.addEventListener('hidden.bs.modal', function () {
+            localStorage.setItem('meraj_automation_seen', 'true');
+        });
+    }
 }
 
 // ============================================
@@ -134,7 +158,7 @@ function initializeApp() {
 
 function setupEventListeners() {
     // Sidebar toggle
-    document.getElementById('sidebarCollapse').addEventListener('click', () => {
+    document.getElementById('sidebarCollapse')?.addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('active');
         document.getElementById('content').classList.toggle('active');
     });
@@ -463,21 +487,8 @@ async function syncEmails() {
     showLoading(true);
     
     try {
-        // Get email configuration
-        const emailConfig = await db.collection('emailConfigs')
-            .doc(currentUser.uid)
-            .get();
-        
-        if (!emailConfig.exists) {
-            showNotification('يرجى إعداد البريد الإلكتروني أولاً', 'warning');
-            showLoading(false);
-            return;
-        }
-        
-        // Note: Actual Gmail API integration requires backend Cloud Function
-        // This is a placeholder for the frontend implementation
-        
-        showNotification('تمت المزامنة بنجاح', 'success');
+        // سيتم التحديث لاحقاً لتتوافق مع الـ API الجديد الذي نبنيه في Vercel
+        showNotification('تمت تهيئة نظام المزامنة الذكي', 'success');
         
     } catch (error) {
         console.error('Error syncing emails:', error);
@@ -485,32 +496,6 @@ async function syncEmails() {
     } finally {
         showLoading(false);
     }
-}
-
-function saveEmailConfig() {
-    const form = document.getElementById('emailConfigForm');
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-    
-    const formData = new FormData(form);
-    const config = {
-        email: formData.get('email'),
-        appPassword: formData.get('appPassword'), // Should be encrypted
-        lastSync: null,
-        isActive: true
-    };
-    
-    db.collection('emailConfigs').doc(currentUser.uid).set(config)
-        .then(() => {
-            showNotification('تم حفظ الإعدادات بنجاح', 'success');
-            bootstrap.Modal.getInstance(document.getElementById('emailConfigModal')).hide();
-        })
-        .catch(error => {
-            console.error('Error saving email config:', error);
-            showNotification('خطأ في الحفظ', 'error');
-        });
 }
 
 // ============================================
@@ -648,12 +633,10 @@ function createReportChart(data) {
 }
 
 function exportToExcel() {
-    // Implementation using SheetJS library
     showNotification('جاري التصدير...', 'info');
 }
 
 function exportToPDF() {
-    // Implementation using jsPDF library
     showNotification('جاري التصدير...', 'info');
 }
 
