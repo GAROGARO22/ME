@@ -74,7 +74,8 @@ html[dir="rtl"] {
     color: var(--text-primary);
     border: 2px solid var(--border-color);
     font-weight: 600;
-    transition: all 0.3s ease;
+    transition: all var(--transition-speed) var(--transition-timing),
+                transform var(--transition-speed) var(--transition-timing);
 }
 
 .btn-google:hover {
@@ -279,22 +280,6 @@ html[dir="rtl"] {
     box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
 }
 
-.btn-google {
-    background-color: var(--white);
-    color: var(--text-primary);
-    border: 2px solid var(--border-color);
-    font-weight: 600;
-    transition: all var(--transition-speed) var(--transition-timing),
-                transform var(--transition-speed) var(--transition-timing);
-}
-
-.btn-google:hover {
-    background-color: var(--bg-secondary);
-    border-color: var(--gold);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
 /* Tables */
 .table {
     background: var(--bg-primary);
@@ -468,7 +453,7 @@ html[dir="rtl"] {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.8); /* لون أبيض نصف شفاف بدل الأسود */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -488,39 +473,6 @@ html[dir="rtl"] {
     to {
         transform: rotate(360deg);
     }
-}
-
-/* Responsive Design */
-@media (max-width: 992px) {
-    .sidebar {
-        margin-right: -280px;
-    }
-    
-    .sidebar.active {
-        margin-right: 0;
-    }
-    
-    .main-content {
-        margin-right: 0;
-    }
-}
-
-/* Loading Spinner */
-.spinner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.8); /* لون أبيض نصف شفاف بدل الأسود */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.spinner-border-gold {
-    color: var(--gold);
 }
 
 /* Status Badges */
@@ -612,38 +564,7 @@ html[dir="rtl"] {
     }
 }
 
-/* Animations */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
-
-.pulse {
-    animation: pulse 2s infinite;
-}
-
-/* Utility Classes */
-.text-small {
-    font-size: 0.85rem;
-}
-
-.cursor-pointer {
-    cursor: pointer;
-}
-
-.shadow-gold {
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
-}
-
-.border-gold {
-    border: 2px solid var(--gold);
-}
-
-/* Animations */
+/* Animations (Pulse & Lift) */
 @keyframes pulse {
     0%, 100% {
         opacity: 1;
@@ -659,7 +580,6 @@ html[dir="rtl"] {
     animation: pulse 2s var(--transition-timing) infinite;
 }
 
-/* Hover Effects */
 .hover-lift {
     transition: all var(--transition-speed) var(--transition-timing);
 }
@@ -686,23 +606,60 @@ html[dir="rtl"] {
     }
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+/* Utility Classes */
+.text-small {
+    font-size: 0.85rem;
 }
 
-::-webkit-scrollbar-track {
-    background: var(--bg-body);
-    transition: background var(--transition-speed) var(--transition-timing);
+.cursor-pointer {
+    cursor: pointer;
 }
 
-::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
-    transition: background var(--transition-speed) var(--transition-timing);
+.shadow-gold {
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: var(--gold);
+.border-gold {
+    border: 2px solid var(--gold);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .sidebar {
+        margin-right: -280px;
+    }
+    
+    .sidebar.active {
+        margin-right: 0;
+    }
+    
+    .main-content {
+        margin-right: 0;
+    }
+}
+
+/* تأثير الإطار الذهبي اللامع والمتحرك لنظام معراج (معدل للثيم الفاتح) */
+.meraj-glowing-card {
+    background-color: var(--bg-primary); 
+    color: var(--text-primary); 
+    border: 2px solid var(--gold); 
+    border-radius: 15px;
+    position: relative;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    animation: goldGlowLight 2.5s infinite alternate;
+}
+
+@keyframes goldGlowLight {
+    0% {
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        border-color: var(--gold);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+        border-color: var(--gold-hover); 
+    }
+}
+
+.meraj-icon-glow {
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
 }
