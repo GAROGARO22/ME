@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -403,3 +404,371 @@
     </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معراج - نظام إدارة المبيعات</title>
+    
+    <!-- Bootstrap RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/theme.css">
+    
+    <!-- Vercel Web Analytics -->
+    <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body class="bg-light">
+    <!-- Login Page -->
+    <div id="loginPage" class="container-fluid">
+        <div class="row min-vh-100 align-items-center justify-content-center">
+            <div class="col-md-4 col-lg-3">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h1 class="brand-logo text-gold">
+                                <i class="fas fa-mountain"></i> معراج
+                            </h1>
+                            <p class="text-muted">نظام إدارة المبيعات المتكامل</p>
+                        </div>
+                        
+                        <div class="d-grid gap-3">
+                            <button id="googleLoginBtn" class="btn btn-google btn-lg">
+                                <i class="fab fa-google me-2"></i>
+                                تسجيل الدخول باستخدام جوجل
+                            </button>
+                            
+                            <hr class="my-3">
+                            
+                            <div class="text-center">
+                                <button id="themeToggleBtn" class="btn btn-outline-secondary btn-sm w-100 mt-2" data-theme-toggle>
+                                    <i class="fas fa-moon me-2"></i> تبديل الثيم
+                                </button>
+                                <small class="text-muted d-block mt-3">
+                                    هل لديك حساب؟ 
+                                    <a href="#" class="text-gold text-decoration-none">تسجيل جديد</a>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (Hidden by default) -->
+    <div id="mainApp" class="d-none">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar bg-dark">
+            <div class="sidebar-header">
+                <h3 class="text-gold">
+                    <i class="fas fa-mountain"></i> معراج
+                </h3>
+            </div>
+            
+            <ul class="list-unstyled components">
+                <li class="active">
+                    <a href="#dashboard" data-page="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        لوحة التحكم
+                    </a>
+                </li>
+                <li>
+                    <a href="#customers" data-page="customers">
+                        <i class="fas fa-users"></i>
+                        إدارة العملاء
+                    </a>
+                </li>
+                <li>
+                    <a href="#orders" data-page="orders">
+                        <i class="fas fa-shopping-cart"></i>
+                        إدارة الطلبات
+                    </a>
+                </li>
+                <li>
+                    <a href="#reports" data-page="reports">
+                        <i class="fas fa-chart-bar"></i>
+                        التقارير
+                    </a>
+                </li>
+                <li class="admin-only d-none">
+                    <a href="#admin" data-page="admin">
+                        <i class="fas fa-cogs"></i>
+                        إدارة النظام
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn btn-link text-white">
+                    <i class="fas fa-sign-out-alt"></i>
+                    تسجيل الخروج
+                </button>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content" class="main-content">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-outline-dark">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div class="ms-auto d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-secondary btn-sm theme-toggle" data-theme-toggle>
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle fa-lg"></i>
+                                <span id="userName" class="ms-2">مستخدم</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#profile" data-page="profile"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a id="logoutLink" class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle position-relative" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                <span id="notificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+                                <li class="px-3 py-2 fw-bold">الإشعارات</li>
+                                <li><div id="notificationsList" class="list-group list-group-flush"></div></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div id="appContent" class="p-4"></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Smart Automation Modal (The Golden Modal) -->
+    <div class="modal fade" id="smartAutomationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content meraj-glowing-card">
+          <div class="modal-body p-5 text-center">
+            
+            <div class="mb-4">
+              <i class="fa-brands fa-google text-secondary fs-1 mx-3 meraj-icon-glow"></i>
+              <i class="fa-solid fa-bolt text-warning fs-1 mx-3 meraj-icon-glow"></i>
+              <i class="fa-solid fa-chart-line text-secondary fs-1 mx-3 meraj-icon-glow"></i>
+            </div>
+
+            <h3 class="fw-bold mb-3" style="color: var(--gold);">محرك معراج للأتمتة الذكية</h3>
+            
+            <p class="fs-5 text-secondary mb-4">
+              يعتمد نظامنا على قوة خوادم وخدمات <strong class="text-dark">Google Workspace</strong> ليوفر لك تجربة لا مثيل لها في إدارة مبيعاتك. لكي ينطلق النظام بكامل طاقته، نحتاج لتفعيل المزامنة.
+            </p>
+
+            <div class="alert text-start mb-4" style="background-color: rgba(212, 175, 55, 0.05); border-right: 4px solid var(--gold); color: var(--text-primary);">
+              <h5 class="fw-bold"><i class="fa-solid fa-circle-info text-warning me-2"></i> خطوة حاسمة للعمل بذكاء:</h5>
+              يرجى التأكد من ربط <strong>نفس حساب Gmail</strong> الذي تستخدمه لإجراء طلباتك في المتاجر الكبرى (مثل SHEIN، TEMU، AMAZON).
+              <br><br>
+              <span class="text-secondary"><i class="fa-solid fa-check text-success me-1"></i> هذه الخطوة ستمكن النظام من قراءة تواريخ الشحن، جدولة التنبيهات في تقويمك، وإدراج تفاصيل الطلبات آلياً دون أي تدخل يدوي منك!</span>
+            </div>
+
+            <button id="btnConnectGoogle" class="btn btn-primary btn-lg fw-bold px-5 py-3 mt-2" style="border-radius: 50px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
+              <i class="fa-brands fa-google me-2"></i> ربط الحساب وتفعيل الأتمتة
+            </button>
+            
+            <div class="mt-3">
+              <button type="button" class="btn btn-link text-muted text-decoration-none" data-bs-dismiss="modal">
+                تخطي الآن (قد تفقد بعض الميزات الذكية)
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold">إضافة عميل جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCustomerForm">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">الاسم الكامل</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">رقم الهاتف</label>
+                            <input type="tel" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">البريد الإلكتروني</label>
+                            <input type="email" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">الدولة</label>
+                            <select class="form-select" required>
+                                <option value="">اختر الدولة</option>
+                                <option value="SA">السعودية</option>
+                                <option value="AE">الإمارات</option>
+                                <option value="EG">مصر</option>
+                                <!-- More countries -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">العنوان</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button id="saveCustomerBtn" type="button" class="btn btn-primary shadow-sm">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Order Modal -->
+    <div class="modal fade" id="addOrderModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold">إضافة طلب جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addOrderForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">رقم الطلب</label>
+                                <input type="text" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">المتجر</label>
+                                <select class="form-select" required>
+                                    <option value="">اختر المتجر</option>
+                                    <option value="shein">SHEIN</option>
+                                    <option value="temu">TEMU</option>
+                                    <option value="amazon">AMAZON</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label text-muted">تفاصيل المنتج</label>
+                                <textarea class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">سعر الشراء</label>
+                                <input type="number" step="0.01" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">العملة</label>
+                                <select class="form-select" required>
+                                    <option value="SAR">ريال سعودي</option>
+                                    <option value="USD">دولار أمريكي</option>
+                                    <option value="EUR">يورو</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted">سعر البيع</label>
+                                <input type="number" step="0.01" class="form-control">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label text-muted">ربط بعميل</label>
+                                <select class="form-select" id="orderCustomerSelect">
+                                    <option value="">اختر عميل (اختياري)</option>
+                                    <!-- Dynamic customers -->
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button id="saveOrderBtn" type="button" class="btn btn-primary shadow-sm">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js for reports -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom JS -->
+    <script type="module" src="js/app.js"></script>
+
+    <!-- Force Override Script for Login and Theme Buttons -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // ربط زر تسجيل الدخول بشكل قسري ومباشر
+            const forceLoginBtn = document.getElementById("googleLoginBtn");
+            if (forceLoginBtn) {
+                forceLoginBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    console.log("تم الضغط على الزر، جاري تسجيل الدخول...");
+                    
+                    if (window.firebase && window.firebase.auth) {
+                        const provider = new window.firebase.auth.GoogleAuthProvider();
+                        window.firebase.auth().signInWithPopup(provider)
+                        .then((result) => {
+                            console.log("Login successful:", result.user);
+                            document.getElementById('loginPage').classList.add('d-none');
+                            document.getElementById('mainApp').classList.remove('d-none');
+                            
+                            if (typeof window.checkUserPermissions === 'function') {
+                                window.checkUserPermissions(result.user);
+                            } else {
+                                window.location.reload(); 
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Login error:", error);
+                            alert("حدث خطأ في تسجيل الدخول: " + error.message);
+                        });
+                    } else {
+                        console.error("Firebase is not initialized or accessible!");
+                        alert("لم يتم تحميل مكتبات قاعدة البيانات بشكل صحيح. جرب تحديث الصفحة.");
+                    }
+                });
+            }
+
+            // ربط زر تغيير الثيم بشكل قسري
+            const forceThemeBtn = document.getElementById("themeToggleBtn");
+            if (forceThemeBtn) {
+                forceThemeBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    console.log("تغيير الثيم");
+                    document.body.classList.toggle('dark-theme');
+                    const isDark = document.body.classList.contains('dark-theme');
+                    localStorage.setItem('meraj_theme', isDark ? 'dark' : 'light');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+>>>>>>> c08514b103f2a84217b2096797a2a645952328a6

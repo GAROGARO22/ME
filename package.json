@@ -18,7 +18,7 @@
   "author": "Meraj Team",
   "license": "MIT",
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "googleapis": "^140.0.0"
-  },
-  "devDependencies": {}
+  }
 }
