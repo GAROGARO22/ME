@@ -175,8 +175,8 @@
             </div>
 
             <button id="btnConnectGoogle" class="btn btn-primary btn-lg fw-bold px-5 py-3 mt-2" style="border-radius: 50px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
-  <i class="fa-brands fa-google me-2"></i> ربط الحساب وتفعيل الأتمتة
-</button>
+              <i class="fa-brands fa-google me-2"></i> ربط الحساب وتفعيل الأتمتة
+            </button>
             
             <div class="mt-3">
               <button type="button" class="btn btn-link text-muted text-decoration-none" data-bs-dismiss="modal">
@@ -310,5 +310,96 @@
     
     <!-- Custom JS -->
     <script src="js/app.js"></script>
+
+    <!-- سكربت التحكم الآمن لتسجيل الدخول ومعالجة الأخطاء (تمت إضافته باحترافية) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            // 1. استرجاع وتطبيق الثيم المحفوظ فور تحميل الصفحة لتجنب وميض الألوان
+            if(localStorage.getItem('meraj_theme') === 'dark') {
+                document.body.classList.add('dark-theme');
+            }
+
+            // 2. معالجة زر تسجيل الدخول لمنع التعارض (auth/cancelled-popup-request)
+            const forceLoginBtn = document.getElementById("googleLoginBtn");
+            if (forceLoginBtn) {
+                forceLoginBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    
+                    // تعطيل الزر مؤقتاً لتجنب الضغط المزدوج
+                    forceLoginBtn.disabled = true;
+                    const originalContent = forceLoginBtn.innerHTML;
+                    forceLoginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الاتصال...';
+                    
+                    if (window.firebase && window.firebase.auth) {
+                        const provider = new window.firebase.auth.GoogleAuthProvider();
+                        window.firebase.auth().signInWithPopup(provider)
+                        .then((result) => {
+                            console.log("تم تسجيل الدخول بنجاح:", result.user.email);
+                            // لا نقوم بأي تغيير في الواجهة هنا، سنترك onAuthStateChanged يتولى الأمر
+                        })
+                        .catch((error) => {
+                            console.error("خطأ في تسجيل الدخول:", error);
+                            // إعادة تفعيل الزر في حالة الخطأ أو الإغلاق
+                            forceLoginBtn.disabled = false;
+                            forceLoginBtn.innerHTML = originalContent;
+                            
+                            // تجاهل خطأ إغلاق النافذة من قبل المستخدم
+                            if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+                                alert("حدث خطأ في تسجيل الدخول: " + error.message);
+                            }
+                        });
+                    } else {
+                        console.error("مكتبة Firebase غير متوفرة!");
+                        forceLoginBtn.disabled = false;
+                        forceLoginBtn.innerHTML = originalContent;
+                    }
+                });
+            }
+
+            // 3. مراقبة حالة المصادقة (لحل مشكلة "خطأ في تحميل العملاء" - Race Condition)
+            if (window.firebase && window.firebase.auth) {
+                window.firebase.auth().onAuthStateChanged(function(user) {
+                    const loginPage = document.getElementById('loginPage');
+                    const mainApp = document.getElementById('mainApp');
+                    
+                    if (user) {
+                        // المستخدم مسجل الدخول: إخفاء شاشة الدخول وإظهار التطبيق
+                        if (loginPage && mainApp) {
+                            loginPage.classList.add('d-none');
+                            mainApp.classList.remove('d-none');
+                        }
+                        
+                        // تحديث اسم المستخدم في الشريط العلوي (اختياري)
+                        const userNameElement = document.getElementById('userName');
+                        if(userNameElement) userNameElement.innerText = user.displayName || 'مستخدم';
+                        
+                        // الأهم: استدعاء دوال جلب البيانات فقط بعد التأكد من المصادقة!
+                        // هذه الدوال موجودة أو سيتم برمجتها في app.js
+                        if (typeof window.loadCustomers === "function") window.loadCustomers();
+                        if (typeof window.loadOrders === "function") window.loadOrders();
+                        
+                    } else {
+                        // المستخدم غير مسجل الدخول: إظهار شاشة الدخول
+                        if (loginPage && mainApp) {
+                            loginPage.classList.remove('d-none');
+                            mainApp.classList.add('d-none');
+                        }
+                    }
+                });
+            }
+
+            // 4. تفعيل أزرار تبديل الثيم
+            const themeToggleBtns = document.querySelectorAll("[data-theme-toggle]");
+            themeToggleBtns.forEach(btn => {
+                btn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    document.body.classList.toggle('dark-theme');
+                    const isDark = document.body.classList.contains('dark-theme');
+                    localStorage.setItem('meraj_theme', isDark ? 'dark' : 'light');
+                });
+            });
+        });
+    </script>
 </body>
 </html>
