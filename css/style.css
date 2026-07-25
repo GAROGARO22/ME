@@ -508,3 +508,29 @@ html[dir="rtl"] {
 .border-gold {
     border: 2px solid var(--gold);
 }
+
+/* تأثير الإطار الذهبي اللامع والمتحرك لنظام معراج (معدل للثيم الفاتح) */
+.meraj-glowing-card {
+    background-color: var(--bg-primary); /* استخدام خلفية بيضاء تتماشى مع النظام */
+    color: var(--text-primary); /* نص داكن مقروء */
+    border: 2px solid var(--gold); 
+    border-radius: 15px;
+    position: relative;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    animation: goldGlowLight 2.5s infinite alternate;
+}
+
+@keyframes goldGlowLight {
+    0% {
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+        border-color: var(--gold);
+    }
+    100% {
+        box-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+        border-color: var(--gold-hover); 
+    }
+}
+
+.meraj-icon-glow {
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
