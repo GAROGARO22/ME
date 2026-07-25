@@ -26,6 +26,7 @@ function toggleTheme() {
 
 function bindThemeButtons() {
   document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+    if (button.id === 'themeToggleBtn') return;
     button.addEventListener('click', (event) => {
       event.preventDefault();
       toggleTheme();

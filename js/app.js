@@ -1,4 +1,4 @@
-import { initTheme } from './modules/theme.js';
+import { initTheme, toggleTheme } from './modules/theme.js';
 import { initNotifications, destroyNotifications } from './modules/notifications.js';
 import { initDashboardController } from './controllers/dashboardController.js';
 import { initCustomersController } from './controllers/customersController.js';
@@ -125,17 +125,11 @@ auth.onAuthStateChanged((user) => {
 });
 
 function bindGlobalEvents() {
-  const googleButton = document.getElementById('googleLoginBtn');
   const logoutButton = document.getElementById('logoutBtn');
   const logoutLink = document.getElementById('logoutLink');
   const connectGoogleButton = document.getElementById('btnConnectGoogle');
   const saveCustomerButton = document.getElementById('saveCustomerBtn');
   const saveOrderButton = document.getElementById('saveOrderBtn');
-
-  googleButton?.addEventListener('click', (event) => {
-    event.preventDefault();
-    handleGoogleLogin();
-  });
 
   logoutButton?.addEventListener('click', (event) => {
     event.preventDefault();
@@ -363,6 +357,23 @@ function startGoogleAuth() {
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   bindGlobalEvents();
+
+  const loginBtn = document.getElementById('googleLoginBtn');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      handleGoogleLogin();
+    });
+  }
+
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      toggleTheme();
+    });
+  }
+
   const params = new URLSearchParams(window.location.search);
   const syncStatus = params.get('sync');
   if (syncStatus === 'success') {
@@ -373,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.handleGoogleLogin = handleGoogleLogin;
 window.handleLogout = handleLogout;
+window.toggleTheme = toggleTheme;
 window.saveCustomer = saveCustomer;
 window.saveOrder = saveOrder;
 window.syncEmails = syncEmails;
