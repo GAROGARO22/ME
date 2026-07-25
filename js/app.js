@@ -843,4 +843,22 @@ function showLoading(show) {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Meraj SaaS initialized');
+    
+    // التقاط رسالة العودة من خوادم Vercel (نجاح أو فشل ربط جوجل)
+    const urlParams = new URLSearchParams(window.location.search);
+    const syncStatus = urlParams.get('sync');
+    
+    if (syncStatus === 'success') {
+        // تأخير بسيط لضمان تحميل الواجهة بالكامل
+        setTimeout(() => {
+            showNotification('تم ربط حساب Google بنجاح وتفعيل الأتمتة الذكية!', 'success');
+        }, 1000);
+        // تنظيف الرابط لإزالة ?sync=success حتى لا يظهر الإشعار مع كل تحديث للصفحة
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (syncStatus === 'failed' || syncStatus === 'error') {
+        setTimeout(() => {
+            showNotification('حدث خطأ أثناء الربط أو تم التراجع، يرجى المحاولة مرة أخرى.', 'error');
+        }, 1000);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 });
