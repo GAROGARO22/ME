@@ -1,33 +1,3 @@
-# Dependencies
-node_modules/
+(css/style.css) is a source file, and there are no build artifacts, dependencies, or temporary files in the changes. Therefore, no .gitignore rules are needed.
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
-
-# Firebase
-.firebase/
-firebase-debug.log
-
-# Vercel
-.vercel/
-
-# Temporary files
-tmp/
-temp/
+Output: (nothing)
