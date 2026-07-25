@@ -124,6 +124,45 @@ auth.onAuthStateChanged((user) => {
   }
 });
 
+function bindGlobalEvents() {
+  const googleButton = document.getElementById('googleLoginBtn');
+  const logoutButton = document.getElementById('logoutBtn');
+  const logoutLink = document.getElementById('logoutLink');
+  const connectGoogleButton = document.getElementById('btnConnectGoogle');
+  const saveCustomerButton = document.getElementById('saveCustomerBtn');
+  const saveOrderButton = document.getElementById('saveOrderBtn');
+
+  googleButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    handleGoogleLogin();
+  });
+
+  logoutButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    handleLogout();
+  });
+
+  logoutLink?.addEventListener('click', (event) => {
+    event.preventDefault();
+    handleLogout();
+  });
+
+  connectGoogleButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    startGoogleAuth();
+  });
+
+  saveCustomerButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    saveCustomer();
+  });
+
+  saveOrderButton?.addEventListener('click', (event) => {
+    event.preventDefault();
+    saveOrder();
+  });
+}
+
 function initializeApp() {
   document.getElementById('loginPage').classList.add('d-none');
   document.getElementById('mainApp').classList.remove('d-none');
@@ -132,6 +171,7 @@ function initializeApp() {
     document.querySelectorAll('.admin-only').forEach((el) => el.classList.remove('d-none'));
   }
   initTheme();
+  bindGlobalEvents();
   setupSidebar();
   setupRouter();
   initNotifications(app);
@@ -164,13 +204,22 @@ function setupSidebar() {
   });
 
   document.querySelectorAll('[data-page]').forEach((link) => {
-    link.addEventListener('click', (event) => {
+    link.addEventListener('click', async (event) => {
       event.preventDefault();
       const page = event.currentTarget.getAttribute('data-page');
       history.pushState({}, '', `#${page}`);
-      renderRoute(page);
+      await renderRoute(page);
+      updateActiveNav(page);
     });
   });
+}
+
+function updateActiveNav(page) {
+  document.querySelectorAll('.sidebar ul li').forEach((li) => li.classList.remove('active'));
+  const activeLink = document.querySelector(`[data-page="${page}"]`);
+  if (activeLink?.closest('li')) {
+    activeLink.closest('li').classList.add('active');
+  }
 }
 
 async function ensureAdminAccess() {
@@ -200,13 +249,18 @@ async function renderRoute(routeName) {
     admin: { view: 'views/admin/users.html', controller: initUsersController }
   };
 
-  const route = routes[routeName] || routes.dashboard;
-  if (routeName === 'admin' && !(await ensureAdminAccess())) {
+  const normalizedPage = routeName || 'dashboard';
+  const route = routes[normalizedPage] || routes.dashboard;
+
+  if (normalizedPage === 'admin' && !(await ensureAdminAccess())) {
     return;
   }
 
   try {
     const response = await fetch(route.view);
+    if (!response.ok) {
+      throw new Error(`Failed to load ${route.view}`);
+    }
     const html = await response.text();
     content.innerHTML = html;
 
@@ -214,7 +268,7 @@ async function renderRoute(routeName) {
       route.controller({ app });
     }
 
-    if (routeName === 'admin') {
+    if (normalizedPage === 'admin') {
       initSubscriptionsController({ app });
       initOperationsController({ app });
       initSettingsController({ app });
@@ -308,6 +362,7 @@ function startGoogleAuth() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  bindGlobalEvents();
   const params = new URLSearchParams(window.location.search);
   const syncStatus = params.get('sync');
   if (syncStatus === 'success') {

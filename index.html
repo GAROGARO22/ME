@@ -30,7 +30,7 @@
                         </div>
                         
                         <div class="d-grid gap-3">
-                            <button class="btn btn-google btn-lg" onclick="handleGoogleLogin()">
+                            <button id="googleLoginBtn" class="btn btn-google btn-lg">
                                 <i class="fab fa-google me-2"></i>
                                 تسجيل الدخول باستخدام جوجل
                             </button>
@@ -97,7 +97,7 @@
             </ul>
             
             <div class="sidebar-footer">
-                <button class="btn btn-link text-white" onclick="handleLogout()">
+                <button id="logoutBtn" class="btn btn-link text-white">
                     <i class="fas fa-sign-out-alt"></i>
                     تسجيل الخروج
                 </button>
@@ -126,7 +126,7 @@
                                 <li><a class="dropdown-item" href="#profile" data-page="profile"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
                                 <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج</a></li>
+                                <li><a id="logoutLink" class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج</a></li>
                             </ul>
                         </div>
                         <div class="dropdown">
@@ -174,7 +174,7 @@
               <span class="text-secondary"><i class="fa-solid fa-check text-success me-1"></i> هذه الخطوة ستمكن النظام من قراءة تواريخ الشحن، جدولة التنبيهات في تقويمك، وإدراج تفاصيل الطلبات آلياً دون أي تدخل يدوي منك!</span>
             </div>
 
-            <button id="btnConnectGoogle" onclick="startGoogleAuth()" class="btn btn-primary btn-lg fw-bold px-5 py-3 mt-2" style="border-radius: 50px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
+            <button id="btnConnectGoogle" class="btn btn-primary btn-lg fw-bold px-5 py-3 mt-2" style="border-radius: 50px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);">
   <i class="fa-brands fa-google me-2"></i> ربط الحساب وتفعيل الأتمتة
 </button>
             
@@ -229,7 +229,7 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-primary shadow-sm" onclick="saveCustomer()">حفظ</button>
+                    <button id="saveCustomerBtn" type="button" class="btn btn-primary shadow-sm">حفظ</button>
                 </div>
             </div>
         </div>
@@ -291,7 +291,7 @@
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="button" class="btn btn-primary shadow-sm" onclick="saveOrder()">حفظ</button>
+                    <button id="saveOrderBtn" type="button" class="btn btn-primary shadow-sm">حفظ</button>
                 </div>
             </div>
         </div>

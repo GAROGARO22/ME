@@ -24,14 +24,18 @@ function toggleTheme() {
   applyTheme(nextTheme);
 }
 
-function initTheme() {
-  applyTheme(getPreferredTheme());
+function bindThemeButtons() {
   document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
     button.addEventListener('click', (event) => {
       event.preventDefault();
       toggleTheme();
     });
   });
+}
+
+function initTheme() {
+  applyTheme(getPreferredTheme());
+  bindThemeButtons();
 }
 
 export { initTheme, toggleTheme, applyTheme, getPreferredTheme };
