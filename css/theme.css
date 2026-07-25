@@ -1,0 +1,76 @@
+:root {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-body: #f0f2f5;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #e9ecef;
+  --gold: #d4af37;
+  --gold-hover: #b8962e;
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-primary: #12161f;
+  --bg-secondary: #1b2230;
+  --bg-body: #0f1420;
+  --text-primary: #f5f7fb;
+  --text-secondary: #9aa4b2;
+  --border-color: #2b3446;
+  --gold: #f1c85d;
+  --gold-hover: #e0b53b;
+  --card-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.card,
+.navbar,
+.sidebar,
+.modal-content {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  box-shadow: var(--card-shadow);
+}
+
+.sidebar {
+  background-color: var(--bg-secondary);
+}
+
+.text-gold {
+  color: var(--gold) !important;
+}
+
+.btn-primary {
+  background-color: var(--gold);
+  border-color: var(--gold);
+  color: #111;
+}
+
+.btn-primary:hover {
+  background-color: var(--gold-hover);
+  border-color: var(--gold-hover);
+}
+
+.theme-toggle {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.1rem;
+}
+
+.table {
+  color: var(--text-primary);
+}
+
+.badge-success { background-color: #198754; }
+.badge-warning { background-color: #ffc107; color: #111; }
+.badge-danger { background-color: #dc3545; }
+.badge-info { background-color: #0dcaf0; }

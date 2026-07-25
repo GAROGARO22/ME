@@ -1,0 +1,76 @@
+<div class="container-fluid py-4">
+  <h2 class="mb-4">لوحة التحكم</h2>
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card stat-card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-2">إجمالي المبيعات</h6>
+              <h3 class="mb-0" id="totalSales">0 ر.س</h3>
+            </div>
+            <i class="fas fa-dollar-sign fa-3x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-2">الأرباح</h6>
+              <h3 class="mb-0" id="totalProfit">0 ر.س</h3>
+            </div>
+            <i class="fas fa-chart-line fa-3x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-2">الطلبات</h6>
+              <h3 class="mb-0" id="totalOrders">0</h3>
+            </div>
+            <i class="fas fa-shopping-bag fa-3x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card stat-card bg-warning text-dark">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-2">العملاء</h6>
+              <h3 class="mb-0" id="totalCustomers">0</h3>
+            </div>
+            <i class="fas fa-users fa-3x opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom border-light">
+          <h5 class="mb-0 fw-bold">آخر العمليات</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr><th>التاريخ</th><th>النوع</th><th>التفاصيل</th><th>المبلغ</th></tr>
+              </thead>
+              <tbody id="recentActivity"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
