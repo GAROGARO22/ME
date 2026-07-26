@@ -11,6 +11,7 @@ import { initSettingsController } from './controllers/admin/settingsController.j
 // ==========================================
 // 1. تهيئة إعدادات فايربيس
 // ==========================================
+const firebase = window.firebase;
 const firebaseConfig = {
   apiKey: 'AIzaSyATErm0RWNW9QTgne2lzk4t-HQEIRRitDA',
   authDomain: 'mia3raj.firebaseapp.com',
@@ -21,14 +22,16 @@ const firebaseConfig = {
   measurementId: 'G-Z1VQ0GY9C3'
 };
 
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
+if (firebase && !firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
 }
-const auth = firebase.auth();
-const db = firebase.firestore();
 
-// ==========================================
-// 2. إدارة حالة التطبيق (State Management)
+if (!firebase?.auth || !firebase?.firestore) {
+  console.error('Firebase Compat SDK missing!');
+}
+
+const auth = firebase?.auth ? firebase.auth() : null;
+const db = firebase?.firestore ? firebase.firestore() : null;
 // ==========================================
 let currentUser = null;
 let userData = null;
@@ -79,6 +82,11 @@ function setAppState(nextUser, nextUserData) {
 // 3. المصادقة والصلاحيات
 // ==========================================
 function handleGoogleLogin() {
+  if (!auth || !firebase?.auth) {
+    app.showNotification('تعذر تهيئة Firebase', 'error');
+    return;
+  }
+
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
     .then((result) => {
@@ -86,8 +94,8 @@ function handleGoogleLogin() {
     })
     .catch((error) => {
       if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
-          console.error('Login error:', error);
-          app.showNotification('خطأ في تسجيل الدخول', 'error');
+        console.error('Login error:', error);
+        app.showNotification('خطأ في تسجيل الدخول', 'error');
       }
     });
 }

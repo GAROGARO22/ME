@@ -2,6 +2,7 @@
   "name": "meraj-saas",
   "version": "1.0.0",
   "description": "معراج - نظام إدارة المبيعات المتكامل للتسويق الاجتماعي",
+  "type": "module",
   "main": "index.html",
   "scripts": {
     "dev": "live-server --port=3000",
