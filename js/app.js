@@ -78,6 +78,60 @@ function setAppState(nextUser, nextUserData) {
   app.isAdmin = isAdmin;
 }
 
+const TEMP_ADMIN_EMAILS = ['gar26work@gmail.com'];
+const TEMP_SUBSCRIBER_EMAILS = ['diversitymodern@gmail.com', 'wwwgar26@gmail.com'];
+
+function resolveTemporaryRole(email) {
+  if (!email) return 'guest';
+  if (TEMP_ADMIN_EMAILS.includes(email)) return 'admin';
+  if (TEMP_SUBSCRIBER_EMAILS.includes(email)) return 'subscriber';
+  return 'subscriber';
+}
+
+function applyAuthUi(user) {
+  const loginPage = document.getElementById('loginPage');
+  const mainApp = document.getElementById('mainApp');
+  const userName = document.getElementById('userName');
+  const adminElements = document.querySelectorAll('.admin-only');
+
+  if (!user) {
+    setAppState(null, null);
+    loginPage?.classList.remove('d-none');
+    mainApp?.classList.add('d-none');
+    userName && (userName.textContent = 'مستخدم');
+    adminElements.forEach((el) => el.classList.add('d-none'));
+    history.pushState({}, '', window.location.pathname);
+    const content = document.getElementById('appContent');
+    if (content) content.innerHTML = '';
+    return;
+  }
+
+  const role = resolveTemporaryRole(user.email);
+  const temporaryUserData = {
+    email: user.email,
+    name: user.displayName || user.email,
+    photoURL: user.photoURL,
+    role
+  };
+
+  setAppState(user, temporaryUserData);
+  loginPage?.classList.add('d-none');
+  mainApp?.classList.remove('d-none');
+  userName && (userName.textContent = user.displayName || user.email || 'مستخدم');
+
+  adminElements.forEach((el) => {
+    if (role === 'admin') {
+      el.classList.remove('d-none');
+    } else {
+      el.classList.add('d-none');
+    }
+  });
+
+  const targetRoute = role === 'admin' ? 'admin' : 'dashboard';
+  history.pushState({}, '', `#${targetRoute}`);
+  renderRoute(targetRoute);
+}
+
 // ==========================================
 // 3. المصادقة والصلاحيات
 // ==========================================
@@ -89,9 +143,6 @@ function handleGoogleLogin() {
 
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
-    .then((result) => {
-      checkUserPermissions(result.user);
-    })
     .catch((error) => {
       if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
         console.error('Login error:', error);
@@ -101,10 +152,15 @@ function handleGoogleLogin() {
 }
 
 function handleLogout() {
+  if (!auth) {
+    window.location.reload();
+    return;
+  }
+
   auth.signOut()
     .then(() => {
       destroyNotifications();
-      window.location.reload();
+      applyAuthUi(null);
     })
     .catch((error) => {
       console.error('Logout error:', error);
@@ -113,23 +169,7 @@ function handleLogout() {
 
 async function checkUserPermissions(user) {
   try {
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    if (userDoc.exists) {
-      setAppState(user, userDoc.data());
-    } else {
-      const newUserData = {
-        email: user.email,
-        name: user.displayName,
-        photoURL: user.photoURL,
-        role: 'user',
-        subscription: 'free',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        isActive: true
-      };
-      await db.collection('users').doc(user.uid).set(newUserData);
-      setAppState(user, newUserData);
-    }
-    initializeApp();
+    applyAuthUi(user);
   } catch (error) {
     console.error('Error checking permissions:', error);
     app.showNotification('خطأ في تحميل البيانات', 'error');
@@ -242,13 +282,6 @@ function bindGlobalEvents() {
 }
 
 function initializeApp() {
-  document.getElementById('loginPage').classList.add('d-none');
-  document.getElementById('mainApp').classList.remove('d-none');
-  document.getElementById('userName').textContent = currentUser.displayName || 'مستخدم';
-  if (isAdmin) {
-    document.querySelectorAll('.admin-only').forEach((el) => el.classList.remove('d-none'));
-  }
-  
   initTheme();
   bindGlobalEvents();
   setupSidebar();
@@ -302,16 +335,15 @@ function updateActiveNav(page) {
 
 async function ensureAdminAccess() {
   if (!currentUser) return false;
-  const userDoc = await db.collection('users').doc(currentUser.uid).get();
-  if (!userDoc.exists || userDoc.data().role !== 'admin') {
-    const content = document.getElementById('appContent');
-    if (content) {
-      content.innerHTML = '<div class="alert alert-danger">غير مسموح لك بالوصول إلى هذه الصفحة.</div>';
-    }
-    return false;
+  if (userData?.role === 'admin' || isAdmin) {
+    return true;
   }
-  setAppState(currentUser, userDoc.data());
-  return true;
+
+  const content = document.getElementById('appContent');
+  if (content) {
+    content.innerHTML = '<div class="alert alert-danger">غير مسموح لك بالوصول إلى هذه الصفحة.</div>';
+  }
+  return false;
 }
 
 async function renderRoute(routeName) {
@@ -422,7 +454,14 @@ window.syncEmails = () => app.showNotification('جاري فحص البريد ل�
 // 8. التهيئة عند تحميل الصفحة
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-  // تم إزالة مستمع تسجيل الدخول من هنا لمنع التعارض مع كود index.html
+  initializeApp();
+
+  if (auth) {
+    auth.onAuthStateChanged((user) => {
+      applyAuthUi(user);
+    });
+  }
+
   const params = new URLSearchParams(window.location.search);
   const syncStatus = params.get('sync');
   if (syncStatus === 'success') {
