@@ -79,7 +79,7 @@ function setAppState(nextUser, nextUserData) {
 }
 
 const TEMP_ADMIN_EMAILS = ['gar26work@gmail.com'];
-const TEMP_SUBSCRIBER_EMAILS = ['diversitymodern@gmail.com', 'wwwgar26@gmail.com'];
+const TEMP_SUBSCRIBER_EMAILS = ['wwwgar26@gmail.com'];
 
 function resolveTemporaryRole(email) {
   if (!email) return 'guest';
