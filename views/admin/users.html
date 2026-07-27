@@ -1,12 +1,93 @@
 <div class="container-fluid py-4">
-  <h3 class="fw-bold mb-3">إدارة المستخدمين</h3>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">لوحة إدارة النظام</h3>
+      <p class="text-muted mb-0">إدارة المستخدمين، الاشتراكات، السجل، والإعدادات من مكان واحد.</p>
+    </div>
+    <span class="badge bg-warning text-dark">مدير نظام</span>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small">إجمالي المستخدمين</div>
+          <div id="adminUsersCount" class="fs-3 fw-bold">0</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small">المستخدمون النشطون</div>
+          <div id="adminActiveUsersCount" class="fs-3 fw-bold">0</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small">المدراء</div>
+          <div id="adminAdminCount" class="fs-3 fw-bold">0</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="text-muted small">الاشتراكات الحالية</div>
+          <div id="adminSubscriptionCount" class="fs-3 fw-bold">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card border-0 shadow-sm">
     <div class="card-body">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الاشتراك</th><th>الحالة</th></tr></thead>
-          <tbody id="adminUsersTable"></tbody>
-        </table>
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" type="button" data-admin-tab="users">المستخدمين</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" type="button" data-admin-tab="subscriptions">الاشتراكات</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" type="button" data-admin-tab="operations">السجل والعمليات</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" type="button" data-admin-tab="settings">الإعدادات</button>
+        </li>
+      </ul>
+
+      <div class="tab-content mt-3">
+        <div class="admin-tab-pane" id="usersPane">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>الاسم</th>
+                  <th>البريد</th>
+                  <th>الدور</th>
+                  <th>الاشتراك</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="admin-tab-pane d-none" id="subscriptionsPane">
+          <div id="adminSubscriptionsContent"></div>
+        </div>
+
+        <div class="admin-tab-pane d-none" id="operationsPane">
+          <div id="adminOperationsContent"></div>
+        </div>
+
+        <div class="admin-tab-pane d-none" id="settingsPane">
+          <div id="adminSettingsContent"></div>
+        </div>
       </div>
     </div>
   </div>
