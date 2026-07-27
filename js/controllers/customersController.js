@@ -1,7 +1,11 @@
 export async function initCustomersController({ app }) {
+  if (!app.currentUser?.uid) return;
+
   try {
-    const snapshot = await app.db.collection('customers')
-      .where('userId', '==', app.currentUser.uid)
+    const snapshot = await app.db
+      .collection('users')
+      .doc(app.currentUser.uid)
+      .collection('customers')
       .orderBy('createdAt', 'desc')
       .get();
 

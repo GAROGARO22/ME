@@ -179,10 +179,16 @@ async function checkUserPermissions(user) {
 // ==========================================
 // 4. العمليات الأساسية وإضافة البيانات
 // ==========================================
-function saveCustomer() {
+async function saveCustomer() {
   const form = document.getElementById('addCustomerForm');
   const fields = form?.querySelectorAll('input, select, textarea');
   const values = Array.from(fields || []).map((field) => field.value);
+
+  if (!currentUser?.uid) {
+    app.showNotification('يرجى تسجيل الدخول أولاً', 'error');
+    return;
+  }
+
   if (!values.some(Boolean)) {
     app.showNotification('يرجى تعبئة بيانات العميل', 'warning');
     return;
@@ -200,16 +206,18 @@ function saveCustomer() {
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  db.collection('customers').add(customer)
-    .then(() => {
-      app.showNotification('تم إضافة العميل بنجاح', 'success');
-      bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'))?.hide();
-      if(typeof window.loadCustomers === 'function') window.loadCustomers(); // تحديث الجدول
-    })
-    .catch((error) => {
-      console.error(error);
-      app.showNotification('خطأ في الحفظ', 'error');
-    });
+  try {
+    await db.collection('users').doc(currentUser.uid).collection('customers').add(customer);
+    app.showNotification('تم إضافة العميل بنجاح', 'success');
+    bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'))?.hide();
+    form?.reset();
+    if (typeof window.loadCustomers === 'function') {
+      await window.loadCustomers();
+    }
+  } catch (error) {
+    console.error(error);
+    app.showNotification(error?.message || 'خطأ في الحفظ', 'error');
+  }
 }
 
 function saveOrder() {
@@ -417,12 +425,12 @@ function startGoogleAuth() {
 
 // هذه الدوال تمنع رسائل الخطأ الحمراء في المتصفح وتجلب البيانات حسب صلاحيات القواعد
 window.loadCustomers = async function() {
-    if (!currentUser) return;
+    if (!currentUser?.uid) return;
     try {
-        const snapshot = await db.collection('customers').where('userId', '==', currentUser.uid).get();
-        console.log("تم سحب العملاء بنجاح، العدد:", snapshot.size);
+        await initCustomersController({ app });
     } catch (error) {
         console.error("خطأ في جلب العملاء:", error);
+        app.showNotification('خطأ في تحميل العملاء', 'error');
     }
 };
 

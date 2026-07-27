@@ -2,7 +2,7 @@ export function initDashboardController({ app }) {
   if (!app.currentUser?.uid) return;
 
   Promise.all([
-    app.db.collection('customers').where('userId', '==', app.currentUser.uid).get(),
+    app.db.collection('users').doc(app.currentUser.uid).collection('customers').get(),
     app.db.collection('orders').where('userId', '==', app.currentUser.uid).get()
   ])
     .then(([customersSnap, ordersSnap]) => {
