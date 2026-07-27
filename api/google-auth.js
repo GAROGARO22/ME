@@ -2,11 +2,13 @@ import { google } from 'googleapis';
 
 export default function handler(req, res) {
   // تعريف مفاتيح جوجل التي حصلنا عليها
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'https://me-mu-azure.vercel.app';
+
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
     // تأكد من أن هذا الرابط هو نفسه الذي وضعته في إعدادات Google Cloud
-    'https://me-mu-azure.vercel.app'
+    redirectUri
   );
 
   // إعداد رابط شاشة الموافقة

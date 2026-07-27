@@ -123,6 +123,18 @@ vercel --prod
 
 أو اربط مستودع GitHub الخاص بك بـ Vercel للنشر التلقائي.
 
+#### المتغيرات البيئية المطلوبة على Vercel
+
+أضف المتغيرات التالية في إعدادات المشروع على Vercel:
+
+```bash
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=https://your-project-name.vercel.app
+```
+
+> ملاحظة: ملف Firebase config موجود داخل [js/app.js](js/app.js) وهو جاهز للاستخدام مع مشروع Firebase الحالي، لكن يجب أن يكون المشروع نفسه مرتبطاً بـ Firebase Console وFirestore Rules مرفوعة هناك.
+
 ## 🔐 ميزات الأمان
 
 - مصادقة عبر جوجل فقط

@@ -1,3 +1,4 @@
-(css/style.css) is a source file, and there are no build artifacts, dependencies, or temporary files in the changes. Therefore, no .gitignore rules are needed.
-
-Output: (nothing)
+node_modules/
+.env
+.env.local
+.env.*.local
