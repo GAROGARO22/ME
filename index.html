@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/theme.css">
-    <script defer src="/_vercel/insights/script.js"></script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
 <body class="bg-light">
     <div id="loginPage" class="container-fluid">
@@ -215,6 +213,50 @@
         </div>
     </div>
 
+    <div class="modal fade" id="editCustomerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold">تعديل عميل</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCustomerForm">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">الاسم الكامل</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">رقم الهاتف</label>
+                            <input type="tel" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">البريد الإلكتروني</label>
+                            <input type="email" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">الدولة</label>
+                            <select class="form-select" required>
+                                <option value="">اختر الدولة</option>
+                                <option value="SA">السعودية</option>
+                                <option value="AE">الإمارات</option>
+                                <option value="EG">مصر</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">العنوان</label>
+                            <textarea class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">إلغاء</button>
+                    <button id="saveEditedCustomerBtn" type="button" class="btn btn-primary shadow-sm" onclick="window.saveEditedCustomer()">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="addOrderModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow">
@@ -284,8 +326,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('meraj_theme') === 'dark') {
-                document.body.classList.add('dark-theme');
+            const storedTheme = localStorage.getItem('meraj-theme');
+            if (storedTheme) {
+                document.documentElement.setAttribute('data-theme', storedTheme);
             }
 
             const forceLoginBtn = document.getElementById('googleLoginBtn');
@@ -322,9 +365,14 @@
             if (forceThemeBtn) {
                 forceThemeBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    document.body.classList.toggle('dark-theme');
-                    const isDark = document.body.classList.contains('dark-theme');
-                    localStorage.setItem('meraj_theme', isDark ? 'dark' : 'light');
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', nextTheme);
+                    localStorage.setItem('meraj-theme', nextTheme);
+                    const icons = forceThemeBtn.querySelectorAll('i');
+                    icons.forEach(function(icon) {
+                        icon.className = nextTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+                    });
                 });
             }
         });

@@ -1,7 +1,8 @@
-import { initTheme, toggleTheme } from './modules/theme.js';
+import { initTheme, toggleTheme, applyTheme, getPreferredTheme } from './modules/theme.js';
 import { initNotifications, destroyNotifications } from './modules/notifications.js';
 import { initDashboardController } from './controllers/dashboardController.js';
 import { initCustomersController } from './controllers/customersController.js';
+import { initOrdersController } from './controllers/ordersController.js';
 import { initProfileController } from './controllers/profileController.js';
 import { initUsersController } from './controllers/admin/usersController.js';
 import { initSubscriptionsController } from './controllers/admin/subscriptionsController.js';
@@ -78,17 +79,32 @@ function setAppState(nextUser, nextUserData) {
   app.isAdmin = isAdmin;
 }
 
-const TEMP_ADMIN_EMAILS = ['gar26work@gmail.com'];
-const TEMP_SUBSCRIBER_EMAILS = ['wwwgar26@gmail.com'];
+async function ensureUserDoc(user) {
+  if (!db || !user?.uid) return { role: 'subscriber', isActive: true };
+  const userRef = db.collection('users').doc(user.uid);
+  const snap = await userRef.get();
+  if (snap.exists) return snap.data();
 
-function resolveTemporaryRole(email) {
-  if (!email) return 'guest';
-  if (TEMP_ADMIN_EMAILS.includes(email)) return 'admin';
-  if (TEMP_SUBSCRIBER_EMAILS.includes(email)) return 'subscriber';
-  return 'subscriber';
+  const FALLBACK_ADMIN_EMAILS = ['gar26work@gmail.com'];
+  const role = FALLBACK_ADMIN_EMAILS.includes(user.email) ? 'admin' : 'subscriber';
+  const initialData = {
+    email: user.email || '',
+    name: user.displayName || '',
+    photoURL: user.photoURL || '',
+    role,
+    isActive: true,
+    subscription: 'free',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try {
+    await userRef.set(initialData, { merge: true });
+  } catch (e) {
+    console.error('Failed to create user doc:', e);
+  }
+  return initialData;
 }
 
-function applyAuthUi(user) {
+async function applyAuthUi(user) {
   const loginPage = document.getElementById('loginPage');
   const mainApp = document.getElementById('mainApp');
   const userName = document.getElementById('userName');
@@ -98,7 +114,7 @@ function applyAuthUi(user) {
     setAppState(null, null);
     loginPage?.classList.remove('d-none');
     mainApp?.classList.add('d-none');
-    userName && (userName.textContent = 'مستخدم');
+    if (userName) userName.textContent = 'مستخدم';
     adminElements.forEach((el) => el.classList.add('d-none'));
     history.pushState({}, '', window.location.pathname);
     const content = document.getElementById('appContent');
@@ -106,18 +122,27 @@ function applyAuthUi(user) {
     return;
   }
 
-  const role = resolveTemporaryRole(user.email);
-  const temporaryUserData = {
+  let userDataDoc = { role: 'subscriber', isActive: true };
+  try {
+    userDataDoc = await ensureUserDoc(user);
+  } catch (error) {
+    console.error('Error loading user permissions:', error);
+    app.showNotification('خطأ في تحميل بيانات المستخدم', 'warning');
+  }
+
+  const role = userDataDoc.role || 'subscriber';
+  const fullUserData = {
     email: user.email,
-    name: user.displayName || user.email,
+    name: userDataDoc.name || user.displayName || user.email,
     photoURL: user.photoURL,
+    ...userDataDoc,
     role
   };
 
-  setAppState(user, temporaryUserData);
+  setAppState(user, fullUserData);
   loginPage?.classList.add('d-none');
   mainApp?.classList.remove('d-none');
-  userName && (userName.textContent = user.displayName || user.email || 'مستخدم');
+  if (userName) userName.textContent = fullUserData.name || user.email || 'مستخدم';
 
   adminElements.forEach((el) => {
     if (role === 'admin') {
@@ -127,9 +152,10 @@ function applyAuthUi(user) {
     }
   });
 
-  const targetRoute = role === 'admin' ? 'admin' : 'dashboard';
+  const hashRoute = window.location.hash.replace('#', '');
+  const targetRoute = role === 'admin' ? (hashRoute || 'admin') : (hashRoute || 'dashboard');
   history.pushState({}, '', `#${targetRoute}`);
-  renderRoute(targetRoute);
+  await renderRoute(targetRoute);
 }
 
 // ==========================================
@@ -165,15 +191,6 @@ function handleLogout() {
     .catch((error) => {
       console.error('Logout error:', error);
     });
-}
-
-async function checkUserPermissions(user) {
-  try {
-    applyAuthUi(user);
-  } catch (error) {
-    console.error('Error checking permissions:', error);
-    app.showNotification('خطأ في تحميل البيانات', 'error');
-  }
 }
 
 // ==========================================
@@ -228,24 +245,36 @@ function saveOrder() {
     return;
   }
 
+  const customerSelect = document.getElementById('orderCustomerSelect');
+  const customerId = customerSelect?.value || '';
+  const customerName = customerId
+    ? (customerSelect.options[customerSelect.selectedIndex]?.text || '')
+    : '';
+
   const order = {
-    userId: currentUser.uid,
     orderNumber: values[0] || '',
     store: values[1] || '',
     productName: values[2] || '',
     purchasePrice: parseFloat(values[3]) || 0,
     currency: values[4] || 'SAR',
     salePrice: parseFloat(values[5]) || 0,
-    customerId: values[6] || '',
+    customerId,
+    customerName,
     status: 'pending',
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 
-  db.collection('orders').add(order)
+  if (!currentUser?.uid) {
+    app.showNotification('يرجى تسجيل الدخول أولاً', 'error');
+    return;
+  }
+
+  db.collection('users').doc(currentUser.uid).collection('orders').add(order)
     .then(() => {
       app.showNotification('تم إضافة الطلب بنجاح', 'success');
       bootstrap.Modal.getInstance(document.getElementById('addOrderModal'))?.hide();
-      if(typeof window.loadOrders === 'function') window.loadOrders(); // تحديث الجدول
+      if (form) form.reset();
+      if (typeof window.loadOrders === 'function') window.loadOrders();
     })
     .catch((error) => {
       console.error(error);
@@ -361,7 +390,7 @@ async function renderRoute(routeName) {
   const routes = {
     dashboard: { view: 'views/dashboard.html', controller: initDashboardController },
     customers: { view: 'views/customers.html', controller: initCustomersController },
-    orders: { view: 'views/orders.html', controller: null },
+    orders: { view: 'views/orders.html', controller: initOrdersController },
     reports: { view: 'views/reports.html', controller: null },
     profile: { view: 'views/profile.html', controller: initProfileController },
     admin: { view: 'views/admin/users.html', controller: initUsersController }
@@ -435,27 +464,116 @@ window.loadCustomers = async function() {
 };
 
 window.loadOrders = async function() {
-    if (!currentUser) return;
+    if (!currentUser?.uid) return;
     try {
-        const snapshot = await db.collection('orders').where('userId', '==', currentUser.uid).get();
-        console.log("تم سحب الطلبات بنجاح، العدد:", snapshot.size);
+        await initOrdersController({ app });
     } catch (error) {
         console.error("خطأ في جلب الطلبات:", error);
+        app.showNotification('خطأ في تحميل الطلبات', 'error');
     }
 };
 
 // ==========================================
-// 7. دوال وهمية لإيقاف أخطاء الـ Console لحين برمجتها لاحقاً
+// 7. دوال التعديل والحذف للعملاء والطلبات
 // ==========================================
 window.addCurrency = () => app.showNotification("سيتم تفعيل ميزة إضافة العملات قريباً", "info");
-window.editCustomer = (id) => app.showNotification("جاري برمجة نافذة تعديل العميل", "info");
-window.deleteCustomer = (id) => app.showNotification("جاري برمجة ميزة الحذف", "info");
+
+window.editCustomer = async function(customerId) {
+    if (!currentUser?.uid) return;
+    try {
+        const snap = await db.collection('users').doc(currentUser.uid).collection('customers').doc(customerId).get();
+        if (!snap.exists) {
+            app.showNotification('العميل غير موجود', 'error');
+            return;
+        }
+        const data = snap.data();
+        const modalEl = document.getElementById('editCustomerModal');
+        if (!modalEl) return;
+        const form = document.getElementById('editCustomerForm');
+        if (!form) return;
+        const fields = form.querySelectorAll('input, select, textarea');
+        const fieldNames = ['name', 'phone', 'email', 'country', 'address'];
+        fields.forEach((field, i) => {
+            if (fieldNames[i]) field.value = data[fieldNames[i]] || '';
+        });
+        form.dataset.customerId = customerId;
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    } catch (e) {
+        console.error(e);
+        app.showNotification('خطأ في تحميل بيانات العميل', 'error');
+    }
+};
+
+window.saveEditedCustomer = async function() {
+    const form = document.getElementById('editCustomerForm');
+    if (!form) return;
+    const customerId = form.dataset.customerId;
+    if (!customerId || !currentUser?.uid) return;
+    try {
+        const fields = form.querySelectorAll('input, select, textarea');
+        const values = Array.from(fields).map((f) => f.value);
+        const updated = {
+            name: values[0] || '',
+            phone: values[1] || '',
+            email: values[2] || '',
+            country: values[3] || '',
+            address: values[4] || ''
+        };
+        await db.collection('users').doc(currentUser.uid).collection('customers').doc(customerId).update(updated);
+        app.showNotification('تم تحديث العميل بنجاح', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('editCustomerModal'))?.hide();
+        await initCustomersController({ app });
+    } catch (e) {
+        console.error(e);
+        app.showNotification('خطأ في التحديث', 'error');
+    }
+};
+
+window.deleteCustomer = async function(customerId) {
+    if (!confirm('هل أنت متأكد من حذف هذا العميل؟')) return;
+    if (!currentUser?.uid) return;
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('customers').doc(customerId).delete();
+        app.showNotification('تم حذف العميل بنجاح', 'success');
+        await initCustomersController({ app });
+    } catch (e) {
+        console.error(e);
+        app.showNotification('خطأ في الحذف', 'error');
+    }
+};
+
 window.editOrder = (id) => app.showNotification("جاري برمجة نافذة تعديل الطلب", "info");
-window.linkCustomer = (id) => app.showNotification("جاري برمجة ميزة الربط", "info");
-window.deleteOrder = (id) => app.showNotification("جاري برمجة ميزة الحذف", "info");
-window.editSubscription = (id) => app.showNotification("سيتم تفعيل تعديل الاشتراكات قريباً", "info");
-window.filterOrders = () => console.log("Filtering orders...");
-window.filterCustomers = () => console.log("Filtering customers...");
+
+window.deleteOrder = async function(orderId) {
+    if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
+    if (!currentUser?.uid) return;
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('orders').doc(orderId).delete();
+        app.showNotification('تم حذف الطلب بنجاح', 'success');
+        await initOrdersController({ app });
+    } catch (e) {
+        console.error(e);
+        app.showNotification('خطأ في الحذف', 'error');
+    }
+};
+
+window.orderStatus = async function(orderId, newStatus) {
+    if (!currentUser?.uid) return;
+    try {
+        await db.collection('users').doc(currentUser.uid).collection('orders').doc(orderId).update({ status: newStatus });
+        app.showNotification('تم تحديث حالة الطلب', 'success');
+        await initOrdersController({ app });
+    } catch (e) {
+        console.error(e);
+        app.showNotification('خطأ في تحديث الحالة', 'error');
+    }
+};
+
+window.linkCustomer = () => app.showNotification('جاري برمجة ميزة الربط', 'info');
+window.editSubscription = (id) => app.showNotification('سيتم تفعيل تعديل الاشتراكات قريباً', 'info');
+window.filterOrders = () => console.log('Filtering orders...');
+window.filterCustomers = () => console.log('Filtering customers...');
 window.syncEmails = () => app.showNotification('جاري فحص البريد للطلبات الجديدة...', 'info');
 
 // ==========================================
@@ -465,8 +583,13 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
 
   if (auth) {
-    auth.onAuthStateChanged((user) => {
-      applyAuthUi(user);
+    auth.onAuthStateChanged(async (user) => {
+      await applyAuthUi(user);
+      if (user) {
+        initNotifications(app);
+      } else {
+        destroyNotifications();
+      }
     });
   }
 
@@ -486,4 +609,3 @@ window.saveCustomer = saveCustomer;
 window.saveOrder = saveOrder;
 window.startGoogleAuth = startGoogleAuth;
 window.app = app;
-window.checkUserPermissions = checkUserPermissions;

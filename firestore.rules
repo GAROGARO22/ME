@@ -25,9 +25,20 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && isOwner(userId);
     }
 
-    match /orders/{orderId} {
-      allow read, write: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    match /users/{userId}/customers/{customerId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update, delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    match /users/{userId}/orders/{orderId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update, delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, write: if isAuthenticated() && isOwner(userId);
     }
 
     match /subscriptions/{subscriptionId} {
@@ -40,7 +51,8 @@ service cloud.firestore {
     }
 
     match /operationsLog/{logId} {
-      allow read, write: if isAuthenticated() && isAdmin();
+      allow read, list: if isAuthenticated() && isAdmin();
+      allow write: if isAuthenticated() && isAdmin();
     }
 
     match /settings/{settingId} {

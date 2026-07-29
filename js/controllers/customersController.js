@@ -23,7 +23,10 @@ export async function initCustomersController({ app }) {
           <td>${customer.country || '-'}</td>
           <td><span class="badge badge-success">${customer.status || 'active'}</span></td>
           <td>${customer.totalOrders || 0}</td>
-          <td><button class="btn btn-sm btn-outline-primary" disabled><i class="fas fa-edit"></i></button></td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary" onclick="window.editCustomer('${doc.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger" onclick="window.deleteCustomer('${doc.id}')"><i class="fas fa-trash"></i></button>
+          </td>
         </tr>
       `;
     }).join('');

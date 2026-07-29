@@ -3,7 +3,7 @@ export function initDashboardController({ app }) {
 
   Promise.all([
     app.db.collection('users').doc(app.currentUser.uid).collection('customers').get(),
-    app.db.collection('orders').where('userId', '==', app.currentUser.uid).get()
+    app.db.collection('users').doc(app.currentUser.uid).collection('orders').get()
   ])
     .then(([customersSnap, ordersSnap]) => {
       let totalSales = 0;
