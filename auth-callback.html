@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جاري المعالجة... | معراج</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+        }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+        }
+        .loader-container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e5e7eb;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h2 { margin-bottom: 0.5rem; font-size: 1.5rem; }
+        p { color: #6b7280; margin-bottom: 1.5rem; }
+        .error-msg {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+            margin-top: 1rem;
+            border: 1px solid #fecaca;
+        }
+        .retry-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        .retry-btn:hover { opacity: 0.9; }
+    </style>
+    <!-- استدعاء خط تجوال -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="loader-container">
+        <div class="spinner" id="spinner"></div>
+        <h2 id="status-title">جاري تسجيل الدخول...</h2>
+        <p id="status-desc">يرجى الانتظار بينما نقوم بإنشاء جلستك الآمنة.</p>
+        
+        <div id="error-box" class="error-msg">
+            <strong>حدث خطأ!</strong>
+            <span id="error-text"></span>
+        </div>
+
+        <button id="retry-btn" class="retry-btn" onclick="window.location.href='index.html'">العودة للرئيسية</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signInWithCredential, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        // إعدادات Firebase (يجب استبدالها ببياناتك الحقيقية أو جلبها من ملف config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // تهيئة التطبيق
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            showError("فشل الاتصال بخدمة المصادقة. تأكد من إعدادات Firebase.");
+            console.error(e);
+        }
+
+        async function handleCallback() {
+            const hash = window.location.hash;
+            if (!hash || !hash.includes('access_token')) {
+                // محاولة قراءة error من الرابط
+                const urlParams = new URLSearchParams(window.location.search);
+                const error = urlParams.get('error');
+                if (error) {
+                    showError(`رفضت عملية المصادقة: ${error}`);
+                } else {
+                    showError("لم يتم العثور على بيانات تسجيل الدخول.");
+                }
+                return;
+            }
+
+            try {
+                // استخراج الـ Access Token من الهاش
+                const params = new URLSearchParams(hash.substring(1));
+                const accessToken = params.get('access_token');
+
+                if (!accessToken) throw new Error("رمز الوصول غير موجود");
+
+                // إنشاء بيانات اعتماد Google
+                const credential = GoogleAuthProvider.credential(null, accessToken);
+
+                // تسجيل الدخول إلى Firebase
+                const userCredential = await signInWithCredential(auth, credential);
+                const user = userCredential.user;
+
+                // تحديث واجهة المستخدم
+                document.getElementById('status-title').innerText = "تم بنجاح!";
+                document.getElementById('status-desc').innerText = `مرحباً ${user.displayName || 'مستخدم'}، جاري تحويلك...`;
+                document.getElementById('spinner').style.borderTopColor = "#10b981"; // أخضر للنجاح
+
+                // حفظ أو تحديث بيانات المستخدم في Firestore
+                await saveUserData(user);
+
+                // حفظ الجلسة محلياً (للاستخدام في الطلبات المستقبلية إذا لزم الأمر خارج Firebase SDK)
+                localStorage.setItem('meraj_user_session', JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    name: user.displayName,
+                    photo: user.photoURL,
+                    loginTime: Date.now()
+                }));
+
+                // الانتظار قليلاً ثم التوجيه للوحة التحكم
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error("خطأ في المصادقة:", error);
+                let errorMsg = "حدث خطأ غير متوقع أثناء تسجيل الدخول.";
+                
+                if (error.code === 'auth/account-exists-with-different-credential') {
+                    errorMsg = "هذا البريد الإلكتروني مسجل بالفعل بطريقة مختلفة.";
+                } else if (error.code === 'auth/invalid-credential') {
+                    errorMsg = "بيانات الدخول غير صالحة.";
+                }
+                
+                showError(errorMsg);
+            }
+        }
+
+        async function saveUserData(user) {
+            try {
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (!userSnap.exists()) {
+                    // مستخدم جديد
+                    await setDoc(userRef, {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL,
+                        createdAt: new Date().toISOString(),
+                        role: 'admin', // الدور الافتراضي
+                        isActive: true
+                    });
+                    console.log("تم إنشاء حساب مستخدم جديد");
+                } else {
+                    // تحديث آخر دخول
+                    await setDoc(userRef, {
+                        lastLogin: new Date().toISOString()
+                    }, { merge: true });
+                    console.log("تم تحديث بيانات الدخول");
+                }
+            } catch (e) {
+                console.warn("فشل حفظ بيانات المستخدم في Firestore، لكن التسجيل نجح:", e);
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('status-title').innerText = "فشل التسجيل";
+            document.getElementById('status-title').style.color = "#dc2626";
+            document.getElementById('status-desc').style.display = 'none';
+            
+            const errorBox = document.getElementById('error-box');
+            document.getElementById('error-text').innerText = msg;
+            errorBox.style.display = 'block';
+            
+            document.getElementById('retry-btn').style.display = 'inline-block';
+        }
+
+        // بدء المعالجة
+        if (app) {
+            handleCallback();
+        }
+    </script>
+</body>
+</html>
