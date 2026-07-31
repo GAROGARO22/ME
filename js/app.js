@@ -8,6 +8,7 @@ import { initUsersController } from './controllers/admin/usersController.js';
 import { initSubscriptionsController } from './controllers/admin/subscriptionsController.js';
 import { initOperationsController } from './controllers/admin/operationsController.js';
 import { initSettingsController } from './controllers/admin/settingsController.js';
+import { initReportsController } from './controllers/reportsController.js';
 
 // ==========================================
 // 1. تهيئة إعدادات فايربيس
@@ -391,7 +392,7 @@ async function renderRoute(routeName) {
     dashboard: { view: 'views/dashboard.html', controller: initDashboardController },
     customers: { view: 'views/customers.html', controller: initCustomersController },
     orders: { view: 'views/orders.html', controller: initOrdersController },
-    reports: { view: 'views/reports.html', controller: null },
+    reports: { view: 'views/reports.html', controller: initReportsController },
     profile: { view: 'views/profile.html', controller: initProfileController },
     admin: { view: 'views/admin/users.html', controller: initUsersController }
   };
