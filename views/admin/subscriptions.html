@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الاشتراكات - معراج</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/theme.css">
+</head>
+<body class="bg-light">
+    <div class="container-fluid p-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="fw-bold mb-3">
+                    <i class="fas fa-crown text-warning me-2"></i>
+                    إدارة الاشتراكات
+                </h2>
+                <button id="addSubscriptionBtn" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    إضافة اشتراك جديد
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>اسم الباقة</th>
+                                        <th>السعر</th>
+                                        <th>المدة (أيام)</th>
+                                        <th>الحد الأقصى للعملاء</th>
+                                        <th>الحد الأقصى للطلبات</th>
+                                        <th>الميزات</th>
+                                        <th>الحالة</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subscriptionsTableBody">
+                                    <tr>
+                                        <td colspan="10" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">جاري التحميل...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal إضافة/تعديل اشتراك -->
+    <div class="modal fade" id="subscriptionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="subscriptionModalTitle">إضافة اشتراك جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="subscriptionForm">
+                        <input type="hidden" id="subscriptionId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">اسم الباقة</label>
+                                <input type="text" class="form-control" id="planName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">السعر (ريال سعودي)</label>
+                                <input type="number" step="0.01" class="form-control" id="price" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">المدة بالأيام</label>
+                                <input type="number" class="form-control" id="duration" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الحد الأقصى للعملاء</label>
+                                <input type="number" class="form-control" id="maxCustomers" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الحد الأقصى للطلبات</label>
+                                <input type="number" class="form-control" id="maxOrders" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الحالة</label>
+                                <select class="form-select" id="status">
+                                    <option value="active">نشط</option>
+                                    <option value="inactive">غير نشط</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">الميزات (افصل بينها بفاصلة)</label>
+                                <textarea class="form-control" id="features" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="saveSubscriptionBtn">حفظ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="../js/app.js" type="module"></script>
+    <script src="../js/controllers/admin/subscriptionsController.js" type="module"></script>
+</body>
+</html>
