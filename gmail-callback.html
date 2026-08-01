@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ربط حساب جيميل - معراج</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .status {
+            margin: 30px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .message.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .message.info {
+            background: #bee3f8;
+            color: #2c5282;
+            border: 1px solid #90cdf4;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: #667eea;
+            transform: scale(1.2);
+        }
+
+        .step.completed {
+            background: #48bb78;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .gmail-icon {
+            width: 60px;
+            height: 60px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">م</div>
+        
+        <h1 id="pageTitle">جاري ربط حساب جيميل...</h1>
+        
+        <svg class="gmail-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6Z" fill="#EA4335"/>
+            <path d="M22 6L12 13L2 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+
+        <div class="progress-steps">
+            <div class="step active" id="step1"></div>
+            <div class="step" id="step2"></div>
+            <div class="step" id="step3"></div>
+        </div>
+
+        <div class="status">
+            <div class="spinner" id="spinner"></div>
+            
+            <div id="successMessage" class="message success hidden">
+                ✅ تم ربط حساب جيميل بنجاح!<br>
+                <span id="userEmail"></span>
+            </div>
+
+            <div id="errorMessage" class="message error hidden">
+                ❌ حدث خطأ أثناء الربط<br>
+                <span id="errorText"></span>
+            </div>
+
+            <div id="infoMessage" class="message info hidden">
+                ⏳ جاري معالجة طلبك...
+            </div>
+        </div>
+
+        <div id="actionButtons" class="hidden" style="margin-top: 20px;">
+            <a href="dashboard.html" class="btn">الذهاب للوحة التحكم</a>
+            <a href="index.html" class="btn btn-secondary" style="margin-right: 10px;">الرئيسية</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getAuth, signInWithCustomToken } from "firebase/auth";
+        import { getFunctions, httpsCallable } from "firebase/functions";
+
+        // Firebase Configuration - Replace with your actual config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const functions = getFunctions(app);
+
+        // DOM Elements
+        const spinner = document.getElementById("spinner");
+        const successMessage = document.getElementById("successMessage");
+        const errorMessage = document.getElementById("errorMessage");
+        const infoMessage = document.getElementById("infoMessage");
+        const actionButtons = document.getElementById("actionButtons");
+        const pageTitle = document.getElementById("pageTitle");
+        const userEmailSpan = document.getElementById("userEmail");
+        const errorTextSpan = document.getElementById("errorText");
+        const step1 = document.getElementById("step1");
+        const step2 = document.getElementById("step2");
+        const step3 = document.getElementById("step3");
+
+        // Get authorization code from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+        const error = urlParams.get("error");
+
+        async function handleCallback() {
+            try {
+                // Check for errors from Google
+                if (error) {
+                    throw new Error(`Google OAuth Error: ${error}`);
+                }
+
+                if (!code) {
+                    throw new Error("لم يتم العثور على رمز التفويض");
+                }
+
+                // Step 1: Exchange code for tokens
+                updateStep(1);
+                infoMessage.classList.remove("hidden");
+                
+                try {
+                    const exchangeTokenFn = httpsCallable(functions, "exchangeToken");
+                    const result = await exchangeTokenFn({ code });
+                    
+                    // Step 2: Success
+                    updateStep(2, true);
+                    
+                    // Display success message
+                    spinner.classList.add("hidden");
+                    infoMessage.classList.add("hidden");
+                    successMessage.classList.remove("hidden");
+                    actionButtons.classList.remove("hidden");
+                    
+                    if (result.data.email) {
+                        userEmailSpan.textContent = result.data.email;
+                    }
+                    
+                    pageTitle.textContent = "تم الربط بنجاح!";
+                    updateStep(3, true);
+                    
+                    // Auto redirect after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = "dashboard.html";
+                    }, 3000);
+                    
+                } catch (apiError) {
+                    console.error("API Error:", apiError);
+                    throw apiError;
+                }
+                
+            } catch (err) {
+                console.error("Callback error:", err);
+                
+                // Show error message
+                spinner.classList.add("hidden");
+                infoMessage.classList.add("hidden");
+                errorMessage.classList.remove("hidden");
+                actionButtons.classList.remove("hidden");
+                
+                errorTextSpan.textContent = err.message || "حدث خطأ غير معروف";
+                pageTitle.textContent = "فشل الربط";
+                
+                // Mark steps as failed
+                step1.classList.add("completed");
+                step2.classList.remove("active");
+                step2.style.background = "#fc8181";
+            }
+        }
+
+        function updateStep(stepNumber, completed = false) {
+            const steps = [step1, step2, step3];
+            
+            steps.forEach((step, index) => {
+                if (index + 1 < stepNumber) {
+                    step.classList.add("completed");
+                    step.classList.remove("active");
+                } else if (index + 1 === stepNumber) {
+                    if (!completed) {
+                        step.classList.add("active");
+                    } else {
+                        step.classList.add("completed");
+                        step.classList.remove("active");
+                    }
+                } else {
+                    step.classList.remove("active");
+                    step.classList.remove("completed");
+                }
+            });
+        }
+
+        // Start the callback process
+        handleCallback();
+    </script>
+</body>
+</html>

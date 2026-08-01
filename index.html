@@ -36,8 +36,8 @@
                                     <i class="fas fa-moon me-2"></i> تبديل الثيم
                                 </button>
                                 <small class="text-muted d-block mt-3">
-                                    هل لديك حساب؟
-                                    <a href="#" class="text-gold text-decoration-none">تسجيل جديد</a>
+                                    ليس لديك حساب؟
+                                    <a href="#" id="registerLink" class="text-gold text-decoration-none">تسجيل جديد</a>
                                 </small>
                             </div>
                         </div>
@@ -373,6 +373,22 @@
                     icons.forEach(function(icon) {
                         icon.className = nextTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
                     });
+                });
+            }
+
+            // إصلاح زر تسجيل جديد
+            const registerLink = document.getElementById('registerLink');
+            if (registerLink) {
+                registerLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // في نظامنا، التسجيل يتم تلقائياً عند أول دخول عبر جوجل
+                    // لذا نقوم بتفعيل عملية تسجيل الدخول مباشرة
+                    const loginBtn = document.getElementById('googleLoginBtn');
+                    if (loginBtn && !loginBtn.disabled) {
+                        loginBtn.click();
+                    } else {
+                        alert('للتسجيل الجديد، يرجى استخدام زر \"تسجيل الدخول باستخدام جوجل\" في الأعلى. سيتم إنشاء حسابك تلقائياً عند أول دخول.');
+                    }
                 });
             }
         });
