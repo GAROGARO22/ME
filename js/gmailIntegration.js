@@ -10,8 +10,8 @@ import { doc, updateDoc, getDoc } from "firebase/firestore";
 class GmailIntegration {
   constructor() {
     this.functions = getFunctions();
-    this.CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"; // Replace with your actual Client ID
-    this.REDIRECT_URI = window.location.origin + "/gmail-callback.html";
+    this.CLIENT_ID = "669970676844-q2tnngthukfnecnovr25vcpd172ov7vk.apps.googleusercontent.com"; // Replace with your actual Client ID
+    this.REDIRECT_URI = window.location.origin + "https://me-mu-azure.vercel.app/gmail-callback.html";
     this.SCOPES = [
       "https://www.googleapis.com/auth/gmail.readonly",
       "https://www.googleapis.com/auth/gmail.modify",
