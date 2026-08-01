@@ -1,0 +1,315 @@
+=====================================
+  MERAJ SAAS - PROJECT STRUCTURE
+=====================================
+
+A comprehensive Arabic-language SaaS platform for e-commerce order management,
+CRM, and analytics. Built with vanilla JavaScript, Firebase, Bootstrap 5 RTL,
+and deployed on Vercel.
+
+=====================================
+  PROJECT TREE
+=====================================
+
+meraj-saas/
+│
+├── .env.example
+│
+├── .gitignore
+│
+├── .vscode/
+│   └── settings.json
+│
+├── api/
+│   └── google-auth.js
+│
+├── css/
+│   ├── style.css
+│   └── theme.css
+│
+├── js/
+│   ├── app.js
+│   ├── controllers/
+│   │   ├── dashboardController.js
+│   │   ├── customersController.js
+│   │   ├── ordersController.js
+│   │   ├── profileController.js
+│   │   └── admin/
+│   │       ├── usersController.js
+│   │       ├── operationsController.js
+│   │       ├── settingsController.js
+│   │       └── subscriptionsController.js
+│   └── modules/
+│       ├── notifications.js
+│       └── theme.js
+│
+├── views/
+│   ├── admin/
+│   │   └── users.html
+│   ├── customers.html
+│   ├── dashboard.html
+│   ├── orders.html
+│   ├── profile.html
+│   └── reports.html
+│
+├── myreport/
+│   └── project-structure.txt  (this file)
+│
+├── index.html
+│
+├── firestore.rules
+│
+├── package.json
+│
+├── vercel.json
+│
+├── README.md
+│
+└── package-lock.json
+
+=====================================
+  FILE DESCRIPTIONS
+=====================================
+
+--- ROOT LEVEL FILES ---
+
+.env.example
+  Template for environment variables required by the Google OAuth integration.
+  Contains placeholders for GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and
+  GOOGLE_REDIRECT_URI. Used by the Vercel serverless function for Google
+  authentication.
+
+.gitignore
+  Specifies files and folders to be excluded from Git version control.
+  Ignores node_modules/, .env files, and all .env.*.local environment files.
+
+package.json
+  NPM project configuration for the "meraj-saas" project (version 1.0.0).
+  Defines scripts for development (live-server), building, and Vercel deployment.
+  Dependencies include @vercel/analytics, @vercel/speed-insights, and googleapis.
+  Project type is ES modules ("type": "module").
+
+package-lock.json
+  Auto-generated lock file pinning exact versions of all npm dependencies.
+  Not intended for manual editing. (Ignored per .gitignore.)
+
+vercel.json
+  Vercel deployment configuration file. Sets version 2 and enables clean URLs
+  (removing .html extensions from routes).
+
+firestore.rules
+  Firestore security rules defining role-based access control (RBAC) for all
+  database collections. Enforces authentication checks, ownership validation,
+  and admin-only write permissions for sensitive collections like subscriptions,
+  settings, and operationsLog.
+
+index.html
+  The single-page application (SPA) entry point. Contains the complete HTML
+  structure including:
+  - Login page with Google sign-in button
+  - Sidebar navigation with dashboard, customers, orders, reports, and admin links
+  - Top navbar with user dropdown, notifications badge, and theme toggle
+  - Modals for login, add customer, edit customer, add order, and smart automation prompt
+  - Loads Bootstrap 5 RTL, Font Awesome 6, Chart.js, and Firebase Compat SDKs
+  - Includes inlined DOMMContentLoaded script for login button and theme toggle
+  - Loads js/app.js as an ES module
+
+README.md
+  Project documentation covering: overview, features (order tracking, customer
+  management, reporting, Google Workspace integration), tech stack (HTML5, CSS3,
+  Vanilla JS, Bootstrap 5 RTL, Firebase, Vercel), setup instructions, Firestore
+  data schema, Gmail integration notes, and licensing (MIT).
+
+--- CSS FILES ---
+
+css/style.css
+  Main stylesheet for the Meraj SaaS application. Contains all global styling:
+  CSS custom properties (gold/white theme), RTL layout support, sidebar
+  navigation (fixed, 280px, gold accent), stat cards, data tables, forms,
+  modals, navbar, badges, alerts, custom scrollbar, print styles, dark mode
+  support via prefers-color-scheme, animations (pulse, hover-lift, fadeInUp,
+  gold glow cards), responsive breakpoints, and utility classes.
+
+css/theme.css
+  Theme toggle stylesheet providing CSS variables for both light and dark modes.
+  Uses data-theme attribute on :root to switch between color schemes. Defines
+  background colors, text colors, border colors, gold accent variants, card
+  shadows, and component-level overrides for navbar, sidebar, modals, badges,
+  and buttons to support day/night theme switching persisted in localStorage.
+
+--- JS FILES ---
+
+js/app.js
+  Main application entry point and orchestrator. Handles:
+  1. Firebase initialization with the project config (project: mia3raj)
+  2. Auth state management (onAuthStateChanged listener)
+  3. User role detection (admin vs subscriber) and dynamic UI rendering
+  4. Router for hash-based navigation (dashboard, customers, orders, reports,
+     profile, admin)
+  5. Google login/logout flows
+  6. CRUD operations for customers and orders
+  7. Google Workspace integration redirect
+  8. Smart automation modal (first-time prompt)
+  9. Global utility functions (currency formatting, date formatting, notifications)
+  10. Exposes app object and controller functions to global scope for inline
+      HTML onclick handlers
+
+js/modules/theme.js
+  Theme management module for dark/light mode toggle. Functions:
+  - getPreferredTheme(): reads localStorage or system preference
+  - applyTheme(): sets data-theme attributes on HTML/body elements and
+    updates toggle icons
+  - toggleTheme(): switches between light/dark and persists to localStorage
+  - bindThemeButtons(): attaches click listeners to all [data-theme-toggle] elements
+  Exports: initTheme, toggleTheme, applyTheme, getPreferredTheme
+
+js/modules/notifications.js
+  Real-time notifications module using Firestore onSnapshot. Functions:
+  - renderNotifications(): renders notification list with unread count badge
+  - initNotifications(): subscribes to user's notifications collection, sorted
+    by createdAt descending
+  - destroyNotifications(): unsubscribes from the Firestore listener to prevent
+    memory leaks
+  Exports: initNotifications, destroyNotifications
+
+js/controllers/dashboardController.js
+  Dashboard page controller. Fetches user's customers and orders from Firestore,
+  calculates total sales, profit, order count, and customer count. Renders
+  summary stat cards and a recent activity table of the 5 most recent orders.
+
+js/controllers/customersController.js
+  Customers page controller. Loads all customers for the current user from
+  Firestore, renders them in a table with name, phone, email, country, status
+  badge, order count, and edit/delete action buttons.
+
+js/controllers/ordersController.js
+  Orders page controller. Loads all orders for the current user, renders them
+  in a detailed table with order number, store, product, purchase/sale prices,
+  currency, customer name, status badge (pending/sold/cancelled), and action
+  buttons for marking as sold or deleting.
+
+js/controllers/profileController.js
+  Profile page controller. Loads current user's profile data from Firestore,
+  populates the edit form (name, phone, store, email), and handles form
+  submission to update user profile in Firestore and Firebase Auth.
+
+js/controllers/admin/usersController.js
+  Admin user management controller. Displays system-wide statistics (total
+  users, active users, admins, subscribed users) and a user table with role
+  and subscription badges. Implements admin tab navigation for sub-sections.
+
+js/controllers/admin/operationsController.js
+  Admin operations log controller. Displays administrative operation history
+  from Firestore operationsLog collection (or localStorage fallback), showing
+  title, detail, and timestamp for each logged operation.
+
+js/controllers/admin/settingsController.js
+  Admin settings controller. Renders a settings form (company name, default
+  currency, automation toggle, notifications toggle) with localStorage
+  persistence. Handles form submission to save settings.
+
+js/controllers/admin/subscriptionsController.js
+  Admin subscriptions management controller. Loads all subscription plans from
+  Firestore and displays them in a responsive table with name, description,
+  price (SAR), and active/inactive status badge.
+
+--- API FILES ---
+
+api/google-auth.js
+  Vercel serverless function for Google OAuth authentication. Uses the googleapis
+  library to create an OAuth2 client with the project's credentials, generates
+  an authentication URL with profile, email, and Gmail read-only scopes, and
+  redirects the user to Google's consent screen.
+
+--- VIEWS (HTML TEMPLATES) ---
+
+views/dashboard.html
+  Dashboard page template. Contains the layout for the main dashboard with 4
+  stat cards (total sales, total profit, total orders, total customers) and a
+  recent activity table. Uses placeholders populated by dashboardController.js.
+
+views/customers.html
+  Customers list page template. Contains a table layout with add customer
+  button and table structure for rendering customer records.
+
+views/orders.html
+  Orders management page template. Contains a table layout with sync and add
+  order buttons, and a detailed table structure with 10 columns for order data.
+
+views/profile.html
+  User profile page template. Contains a form with fields for name, phone,
+  store, and email (email is disabled/read-only), and a save button.
+
+views/reports.html
+  Reports/analytics page template. Contains filter controls for report type
+  (sales/profit), date range, store, and currency. The generate button is a
+  placeholder (shows a notification on click).
+
+views/admin/users.html
+  Admin panel template with tabbed navigation containing 4 tabs:
+  - Users: table with user statistics and management
+  - Subscriptions: subscription plans management
+  - Operations: admin operations log
+  - Settings: admin configuration form
+  Each tab content is rendered by its respective controller.
+
+--- CONFIGURATION & DEPLOYMENT ---
+
+.vscode/settings.json
+  VS Code workspace settings. Configures GitHub Pull Requests to ignore the
+  main branch when creating PRs.
+
+myreport/
+  Output directory for project reports and documentation.
+
+=====================================
+  TECHNOLOGY STACK
+=====================================
+
+- Frontend: HTML5, CSS3, Vanilla JavaScript (ES Modules)
+- UI Framework: Bootstrap 5 RTL (Right-to-Left)
+- Icons: Font Awesome 6
+- Charts: Chart.js
+- Backend/Auth: Firebase (Authentication, Firestore)
+- Deployment: Vercel (serverless functions + static hosting)
+- Language: Arabic (RTL layout throughout)
+- Package Manager: npm
+
+=====================================
+  FIRESTORE DATA MODEL
+=====================================
+
+Collections (under each user document):
+  - users/          { email, name, role, subscription, isActive, createdAt }
+  - customers/      { name, phone, email, country, address, status, totalOrders }
+  - orders/         { orderNumber, store, productName, purchasePrice, salePrice,
+                       currency, customerId, customerName, status }
+  - notifications/  { title, message, read, createdAt }
+  - emailConfigs/   { Gmail SMTP configuration per user }
+
+Root collections:
+  - subscriptions/  { name, description, price, isActive }
+  - settings/       { global application settings (admin-only) }
+  - operationsLog/  { title, detail, createdAt (admin-only) }
+
+=====================================
+  DEPLOYMENT
+=====================================
+
+Development:
+  npm run dev    (uses live-server on port 3000)
+
+Production:
+  npm run deploy (uses Vercel CLI for production deployment)
+
+Environment Variables (on Vercel):
+  GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
+
+=====================================
+  NOTES
+=====================================
+
+- node_modules/ is excluded and ignored (large dependency folder).
+- The project uses Firebase Compat SDK for backward compatibility.
+- Admin access is granted to users with email in the FALLBACK_ADMIN_EMAILS list.
+- Theme preference is persisted in localStorage under key 'meraj-theme'.
+- All text content in the UI is in Arabic (RTL layout).

@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "live-server --port=3000",
     "build": "echo 'Build complete - ready for Vercel deployment'",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "test": "echo 'Tests not configured yet'"
   },
   "keywords": [
     "saas",
@@ -21,6 +22,14 @@
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "googleapis": "^140.0.0"
+    "googleapis": "^140.0.0",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.4.1",
+    "jest": "^30.4.2",
+    "live-server": "^1.2.2"
   }
 }
