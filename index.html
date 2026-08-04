@@ -5,112 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معراج - نظام إدارة المبيعات</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/modern-ui.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/theme.css">
 </head>
-<body class="bg-light">
-    <div id="loginPage" class="container-fluid">
-        <div class="row min-vh-100 align-items-center justify-content-center">
-            <div class="col-md-4 col-lg-3">
-                <div class="card shadow-lg border-0">
-                    <div class="card-body p-5">
-                        <div class="text-center mb-4">
-                            <h1 class="brand-logo text-gold">
-                                <i class="fas fa-mountain"></i> معراج
-                            </h1>
-                            <p class="text-muted">نظام إدارة المبيعات المتكامل</p>
-                        </div>
+<body class="bg-light" data-theme="light">
+    <!-- Login Page -->
+    <div id="loginPage" class="login-page">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-mountain"></i>
+                    <span>معراج</span>
+                </div>
+                <p class="text-muted mb-0">نظام إدارة المبيعات المتكامل</p>
+            </div>
+            
+            <div class="login-body">
+                <div class="d-grid gap-3">
+                    <button id="googleLoginBtn" class="btn btn-google btn-lg">
+                        <i class="fab fa-google"></i>
+                        تسجيل الدخول باستخدام جوجل
+                    </button>
 
-                        <div class="d-grid gap-3">
-                            <button id="googleLoginBtn" class="btn btn-google btn-lg">
-                                <i class="fab fa-google me-2"></i>
-                                تسجيل الدخول باستخدام جوجل
-                            </button>
+                    <hr class="my-3">
 
-                            <hr class="my-3">
-
-                            <div class="text-center">
-                                <button id="themeToggleBtn" class="btn btn-outline-secondary btn-sm w-100 mt-2" data-theme-toggle>
-                                    <i class="fas fa-moon me-2"></i> تبديل الثيم
-                                </button>
-                                <small class="text-muted d-block mt-3">
-                                    ليس لديك حساب؟
-                                    <a href="#" id="registerLink" class="text-gold text-decoration-none">تسجيل جديد</a>
-                                </small>
-                            </div>
-                        </div>
+                    <div class="text-center">
+                        <button id="themeToggleBtn" class="btn btn-outline-secondary btn-sm w-100 mt-2" data-theme-toggle>
+                            <i class="fas fa-moon"></i> تبديل الثيم
+                        </button>
+                        <small class="text-muted d-block mt-3">
+                            ليس لديك حساب؟
+                            <a href="#" id="registerLink" class="text-gold text-decoration-none fw-bold">تسجيل جديد</a>
+                        </small>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Main Application -->
     <div id="mainApp" class="d-none">
-        <nav id="sidebar" class="sidebar bg-dark">
+        <!-- Sidebar Overlay for Mobile -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+        
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
             <div class="sidebar-header">
-                <h3 class="text-gold">
-                    <i class="fas fa-mountain"></i> معراج
-                </h3>
+                <a href="#" class="sidebar-brand">
+                    <i class="fas fa-mountain"></i>
+                    <span>معراج</span>
+                </a>
             </div>
 
-            <ul class="list-unstyled components">
-                <li class="active">
-                    <a href="#dashboard" data-page="dashboard">
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="#dashboard" data-page="dashboard" class="sidebar-menu-link active">
                         <i class="fas fa-tachometer-alt"></i>
-                        لوحة التحكم
+                        <span>لوحة التحكم</span>
                     </a>
                 </li>
-                <li>
-                    <a href="#customers" data-page="customers">
+                <li class="sidebar-menu-item">
+                    <a href="#customers" data-page="customers" class="sidebar-menu-link">
                         <i class="fas fa-users"></i>
-                        إدارة العملاء
+                        <span>إدارة العملاء</span>
                     </a>
                 </li>
-                <li>
-                    <a href="#orders" data-page="orders">
+                <li class="sidebar-menu-item">
+                    <a href="#orders" data-page="orders" class="sidebar-menu-link">
                         <i class="fas fa-shopping-cart"></i>
-                        إدارة الطلبات
+                        <span>إدارة الطلبات</span>
                     </a>
                 </li>
-                <li>
-                    <a href="#reports" data-page="reports">
+                <li class="sidebar-menu-item">
+                    <a href="#reports" data-page="reports" class="sidebar-menu-link">
                         <i class="fas fa-chart-bar"></i>
-                        التقارير
+                        <span>التقارير</span>
                     </a>
                 </li>
-                <li class="admin-only d-none">
-                    <a href="#admin" data-page="admin">
+                <li class="sidebar-menu-item admin-only d-none">
+                    <a href="#admin" data-page="admin" class="sidebar-menu-link">
                         <i class="fas fa-cogs"></i>
-                        إدارة النظام
+                        <span>إدارة النظام</span>
                     </a>
                 </li>
             </ul>
 
             <div class="sidebar-footer">
-                <button id="logoutBtn" class="btn btn-link text-white">
+                <button id="logoutBtn" class="btn btn-outline-primary w-100">
                     <i class="fas fa-sign-out-alt"></i>
-                    تسجيل الخروج
+                    <span>تسجيل الخروج</span>
                 </button>
             </div>
         </nav>
 
+        <!-- Main Content -->
         <div id="content" class="main-content">
-            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-                <div class="container-fluid">
-                    <button type="button" id="sidebarCollapse" class="btn btn-outline-dark">
+            <!-- Top Navbar -->
+            <nav class="navbar">
+                <div class="navbar-content">
+                    <button type="button" id="sidebarCollapse" class="navbar-toggle">
                         <i class="fas fa-bars"></i>
                     </button>
 
-                    <div class="ms-auto d-flex align-items-center gap-2">
-                        <button class="btn btn-outline-secondary btn-sm theme-toggle" data-theme-toggle>
+                    <div class="navbar-actions">
+                        <!-- Theme Toggle -->
+                        <button class="theme-toggle-btn" data-theme-toggle title="تبديل الثيم">
                             <i class="fas fa-moon"></i>
                         </button>
-                        <div class="dropdown">
-                            <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle fa-lg"></i>
-                                <span id="userName" class="ms-2">مستخدم</span>
+                        
+                        <!-- Notifications -->
+                        <button class="notification-btn" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span id="notificationCount" class="notification-badge d-none">0</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+                            <li class="px-3 py-2 fw-bold">الإشعارات</li>
+                            <li><div id="notificationsList" class="list-group list-group-flush"></div></li>
+                        </ul>
+                        
+                        <!-- User Dropdown -->
+                        <div class="user-dropdown dropdown">
+                            <button class="user-btn" type="button" data-bs-toggle="dropdown">
+                                <img src="" alt="User" class="user-avatar" id="userAvatar" style="display: none;">
+                                <i class="fas fa-user-circle fa-lg d-none" id="userIcon"></i>
+                                <span id="userName" class="user-name">مستخدم</span>
+                                <i class="fas fa-chevron-down text-small"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="#profile" data-page="profile"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
@@ -119,21 +145,12 @@
                                 <li><a id="logoutLink" class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>تسجيل الخروج</a></li>
                             </ul>
                         </div>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle position-relative" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-bell"></i>
-                                <span id="notificationCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
-                                <li class="px-3 py-2 fw-bold">الإشعارات</li>
-                                <li><div id="notificationsList" class="list-group list-group-flush"></div></li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </nav>
 
-            <div id="appContent" class="p-4"></div>
+            <!-- App Content -->
+            <div id="appContent" class="app-content"></div>
         </div>
     </div>
 
