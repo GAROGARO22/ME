@@ -160,12 +160,12 @@ exports.fetchGmailOrders = functions.https.onCall(async (data, context) => {
     // Initialize Gmail API
     const gmail = google.gmail({ version: "v1", auth: authClient });
 
-    // List messages
+    // List messages - Enhanced query to include all SHEIN email types
     const response = await gmail.users.messages.list({
       userId: "me",
       maxResults: maxResults,
       labelIds: labelIds,
-      q: "subject:(طلب جديد|order confirmation|شكرًا لطلبك|تم استلام طلبك)"
+      q: "subject:(طلب جديد|order confirmation|شكرًا لطلبك|تم استلام طلبك|تأكيد الدفع|payment confirmation|تم شحن|shipped|تم التسليم|delivered|استرداد|refund)"
     });
 
     if (!response.data.messages || response.data.messages.length === 0) {
@@ -191,19 +191,8 @@ exports.fetchGmailOrders = functions.https.onCall(async (data, context) => {
 
         const messageId = msg.data.id;
         
-        // Skip if already processed
+        // Skip if already processed in this session
         if (processedIds.has(messageId)) continue;
-
-        // Check if order already exists in database
-        const existingOrder = await db.collection("orders")
-          .where("gmailMessageId", "==", messageId)
-          .limit(1)
-          .get();
-
-        if (!existingOrder.empty) {
-          processedIds.add(messageId);
-          continue;
-        }
 
         // Parse email content
         const emailData = parseEmailContent(msg.data);
@@ -212,25 +201,72 @@ exports.fetchGmailOrders = functions.https.onCall(async (data, context) => {
         const orderInfo = extractOrderFromEmail(emailData);
         
         if (orderInfo) {
-          orderInfo.gmailMessageId = messageId;
-          orderInfo.userId = userId;
-          orderInfo.source = "gmail";
-          orderInfo.createdAt = admin.firestore.FieldValue.serverTimestamp();
-          orderInfo.rawEmail = {
-            from: emailData.from,
-            to: emailData.to,
-            subject: emailData.subject,
-            date: emailData.date,
-            headers: msg.data.payload.headers
-          };
+          // Check if order already exists by order number to prevent duplicates
+          let existingOrder;
+          if (orderInfo.orderNumber) {
+            existingOrder = await db.collection("orders")
+              .where("userId", "==", userId)
+              .where("orderNumber", "==", orderInfo.orderNumber)
+              .limit(1)
+              .get();
+          }
 
-          // Save to Firestore
-          const orderRef = await db.collection("orders").add(orderInfo);
-          
-          orders.push({
-            id: orderRef.id,
-            ...orderInfo
-          });
+          if (!existingOrder || existingOrder.empty) {
+            // Create new order
+            orderInfo.gmailMessageId = messageId;
+            orderInfo.userId = userId;
+            orderInfo.source = "gmail";
+            orderInfo.createdAt = admin.firestore.FieldValue.serverTimestamp();
+            orderInfo.rawEmail = {
+              from: emailData.from,
+              to: emailData.to,
+              subject: emailData.subject,
+              date: emailData.date,
+              headers: msg.data.payload.headers
+            };
+
+            const orderRef = await db.collection("orders").add(orderInfo);
+            
+            orders.push({
+              id: orderRef.id,
+              ...orderInfo,
+              _isNew: true
+            });
+          } else {
+            // Update existing order with new information (lifecycle management)
+            const existingDoc = existingOrder.docs[0];
+            const existingData = existingDoc.data();
+            
+            // Prepare update data - merge new info with existing
+            const fieldsToUpdate = {};
+            if (orderInfo.trackingNumber) fieldsToUpdate.trackingNumber = orderInfo.trackingNumber;
+            if (orderInfo.courier) fieldsToUpdate.courier = orderInfo.courier;
+            if (orderInfo.estimatedDeliveryDate) fieldsToUpdate.estimatedDeliveryDate = orderInfo.estimatedDeliveryDate;
+            if (orderInfo.refundAmount > 0) fieldsToUpdate.refundAmount = orderInfo.refundAmount;
+            if (orderInfo.orderStatus) fieldsToUpdate.orderStatus = orderInfo.orderStatus;
+            if (orderInfo.lastEmailTypeSynced) fieldsToUpdate.lastEmailTypeSynced = orderInfo.lastEmailTypeSynced;
+            if (orderInfo.status) fieldsToUpdate.status = orderInfo.status;
+            if (orderInfo.shippingAddress) fieldsToUpdate.shippingAddress = orderInfo.shippingAddress;
+            
+            fieldsToUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+            fieldsToUpdate.gmailMessageId = messageId;
+            fieldsToUpdate.rawEmail = {
+              from: emailData.from,
+              to: emailData.to,
+              subject: emailData.subject,
+              date: emailData.date,
+              headers: msg.data.payload.headers
+            };
+
+            await db.collection("orders").doc(existingDoc.id).update(fieldsToUpdate);
+            
+            orders.push({
+              id: existingDoc.id,
+              ...existingData,
+              ...fieldsToUpdate,
+              _isNew: false
+            });
+          }
 
           processedIds.add(messageId);
         }
@@ -308,12 +344,60 @@ function parseEmailContent(messageData) {
 }
 
 /**
+ * Classify SHEIN email type based on subject line
+ * @param {string} subject - Email subject line
+ * @returns {string} - Email type classification
+ */
+function classifySheinEmail(subject) {
+  if (!subject) return 'UNKNOWN';
+  
+  const lowerSubject = subject.toLowerCase();
+  
+  // Payment Confirmation
+  if (lowerSubject.includes('تأكيد الدفع') || 
+      lowerSubject.includes('payment confirmation') ||
+      lowerSubject.includes('تم تأكيد طلبك') ||
+      lowerSubject.includes('order confirmed')) {
+    return 'PAYMENT_CONFIRMATION';
+  }
+  
+  // Order Shipped
+  if (lowerSubject.includes('تم شحن طلبك') || 
+      lowerSubject.includes('shipped') ||
+      lowerSubject.includes('طلبك في الطريق') ||
+      lowerSubject.includes('on the way')) {
+    return 'ORDER_SHIPPED';
+  }
+  
+  // Order Delivered
+  if (lowerSubject.includes('إشعار بتسليم الطلب') || 
+      lowerSubject.includes('delivered') ||
+      lowerSubject.includes('تم التسليم') ||
+      lowerSubject.includes('تم استلام طلبك')) {
+    return 'ORDER_DELIVERED';
+  }
+  
+  // Refund Confirmation
+  if (lowerSubject.includes('قبول طلب سحب المبلغ') || 
+      lowerSubject.includes('refund') ||
+      lowerSubject.includes('استرداد المبلغ') ||
+      lowerSubject.includes('return approved')) {
+    return 'ORDER_REFUNDED';
+  }
+  
+  return 'UNKNOWN';
+}
+
+/**
  * Extract order information from email content
  * Uses regex patterns to identify common order fields
  */
 function extractOrderFromEmail(emailData) {
   const { subject, body, htmlBody } = emailData;
   const content = body || htmlBody || "";
+  
+  // Classify the email type first
+  const emailType = classifySheinEmail(subject);
   
   const orderInfo = {
     customerName: null,
@@ -325,29 +409,41 @@ function extractOrderFromEmail(emailData) {
     orderNumber: null,
     shippingAddress: null,
     notes: null,
-    status: "pending"
+    status: "pending",
+    // New fields for SHEIN integration
+    trackingNumber: '',
+    courier: '',
+    estimatedDeliveryDate: '',
+    refundAmount: 0,
+    orderStatus: 'paid',
+    lastEmailTypeSynced: emailType === 'UNKNOWN' ? null : emailType.toLowerCase()
   };
 
-  // Extract order number
+  // Extract order number - enhanced patterns for SHEIN
   const orderNumberPatterns = [
     /رقم الطلب[:\s]+([A-Z0-9\-]+)/i,
     /order\s*(?:number|#)?[:\s]*([A-Z0-9\-]+)/i,
-    /طلب\s*رقم[:\s]+([A-Z0-9\-]+)/i
+    /طلب\s*رقم[:\s]+([A-Z0-9\-]+)/i,
+    /Order\s*#?\s*([A-Z0-9\-]+)/i,
+    /SH(?:E)?IN\s*[:\s]*([A-Z0-9\-]+)/i
   ];
   
   for (const pattern of orderNumberPatterns) {
     const match = content.match(pattern);
     if (match) {
-      orderInfo.orderNumber = match[1];
+      orderInfo.orderNumber = match[1].trim();
       break;
     }
   }
 
-  // Extract customer name
+  // Extract customer name - including Arabic greeting format
   const namePatterns = [
     /الاسم[:\s]+([أ-يA-Za-z\s]+)/i,
     /customer\s*name[:\s]+([أ-يA-Za-z\s]+)/i,
-    /عزيزي\s+([أ-يA-Za-z\s]+)/i
+    /عزيزي\s+([أ-يA-Za-z\s]+)/i,
+    /مرحبا\s+([أ-يA-Za-z\s]+)/i,
+    /hello\s+([أ-يA-Za-z\s]+)/i,
+    /dear\s+([أ-يA-Za-z\s]+)/i
   ];
   
   for (const pattern of namePatterns) {
@@ -369,7 +465,8 @@ function extractOrderFromEmail(emailData) {
   const phonePatterns = [
     /الجوال[:\s]+(05\d{8})/i,
     /الهاتف[:\s]+(05\d{8})/i,
-    /phone[:\s]+(\+?9665\d{8}|05\d{8})/i
+    /phone[:\s]+(\+?9665\d{8}|05\d{8})/i,
+    /mobile[:\s]+(\+?9665\d{8}|05\d{8})/i
   ];
   
   for (const pattern of phonePatterns) {
@@ -380,23 +477,143 @@ function extractOrderFromEmail(emailData) {
     }
   }
 
-  // Extract total amount
+  // Extract total amount - supporting SR108.19 format and other formats
   const amountPatterns = [
+    /SR([0-9,]+\.?[0-9]*)/i,
     /الإجمالي[:\s]+([0-9,]+\.?[0-9]*)\s*(ريال|SAR|USD)/i,
     /total[:\s]+([0-9,]+\.?[0-9]*)\s*(ريال|SAR|USD)/i,
-    /المبلغ[:\s]+([0-9,]+\.?[0-9]*)\s*(ريال|SAR|USD)/i
+    /المبلغ[:\s]+([0-9,]+\.?[0-9]*)\s*(ريال|SAR|USD)/i,
+    /amount[:\s]+([0-9,]+\.?[0-9]*)\s*(ريال|SAR|USD)/i,
+    /([0-9,]+\.?[0-9]*)\s*(ريال|SAR)/i
   ];
   
   for (const pattern of amountPatterns) {
     const match = content.match(pattern);
     if (match) {
       const amount = parseFloat(match[1].replace(/,/g, ""));
-      orderInfo.totalAmount = amount;
-      if (match[2]) {
-        orderInfo.currency = match[2].toUpperCase() === "ريال" ? "SAR" : match[2];
+      if (!isNaN(amount)) {
+        orderInfo.totalAmount = amount;
+        if (match[2]) {
+          orderInfo.currency = match[2].toUpperCase() === "ريال" ? "SAR" : match[2];
+        }
+        break;
+      }
+    }
+  }
+
+  // Extract shipping address
+  const addressPatterns = [
+    /العنوان[:\s]+([^\n]+)/i,
+    /shipping\s*address[:\s]+([^\n]+)/i,
+    /address[:\s]+([^\n]+)/i,
+    /Ship to[:\s]+([^\n]+)/i,
+    /الشحن إلى[:\s]+([^\n]+)/i
+  ];
+  
+  for (const pattern of addressPatterns) {
+    const match = content.match(pattern);
+    if (match) {
+      orderInfo.shippingAddress = match[1].trim();
+      break;
+    }
+  }
+
+  // Extract tracking number (JDW... format for JD courier)
+  const trackingPatterns = [
+    /رقم التتبع[:\s]*([A-Z]{2,}\d+)/i,
+    /tracking\s*(?:number|#)?[:\s]*([A-Z]{2,}\d+)/i,
+    /JDW[A-Z0-9]+/i,
+    /tracking[:\s]*([A-Z0-9]+)/i
+  ];
+  
+  for (const pattern of trackingPatterns) {
+    const match = content.match(pattern);
+    if (match) {
+      orderInfo.trackingNumber = match[0].trim();
+      // Auto-detect courier based on tracking number format
+      if (match[0].startsWith('JDW') || match[0].includes('JD')) {
+        orderInfo.courier = 'JD';
       }
       break;
     }
+  }
+
+  // Extract courier company
+  const courierPatterns = [
+    /شركة التوصيل[:\s]+([^\n]+)/i,
+    /courier[:\s]+([^\n]+)/i,
+    /carrier[:\s]+([^\n]+)/i,
+    /via\s+([A-Z]+)/i
+  ];
+  
+  for (const pattern of courierPatterns) {
+    const match = content.match(pattern);
+    if (match) {
+      const courierMatch = match[1].match(/[A-Za-z]+/);
+      if (courierMatch) {
+        orderInfo.courier = courierMatch[0].trim();
+        break;
+      }
+    }
+  }
+
+  // Extract estimated delivery date
+  const deliveryDatePatterns = [
+    /تاريخ التوصيل المتوقع[:\s]+([^\n]+)/i,
+    /estimated\s*delivery[:\s]+([^\n]+)/i,
+    /expected\s*delivery[:\s]+([^\n]+)/i,
+    /by\s+(\d{1,2}\s+\w+\s+\d{4})/i,
+    /في\s+(\d{1,2}\s+\w+\s+\d{4})/i
+  ];
+  
+  for (const pattern of deliveryDatePatterns) {
+    const match = content.match(pattern);
+    if (match) {
+      orderInfo.estimatedDeliveryDate = match[1].trim();
+      break;
+    }
+  }
+
+  // Extract refund amount
+  const refundPatterns = [
+    /قيمة المبلغ المسترد[:\s]+([0-9,]+\.?[0-9]*)/i,
+    /refund\s*amount[:\s]+([0-9,]+\.?[0-9]*)/i,
+    /استرداد[:\s]+([0-9,]+\.?[0-9]*)\s*(ريال|SAR)/i,
+    /refunded[:\s]+([0-9,]+\.?[0-9]*)/i
+  ];
+  
+  for (const pattern of refundPatterns) {
+    const match = content.match(pattern);
+    if (match) {
+      const refundAmount = parseFloat(match[1].replace(/,/g, ""));
+      if (!isNaN(refundAmount)) {
+        orderInfo.refundAmount = refundAmount;
+        break;
+      }
+    }
+  }
+
+  // Set order status based on email type
+  switch (emailType) {
+    case 'PAYMENT_CONFIRMATION':
+      orderInfo.orderStatus = 'paid';
+      orderInfo.status = 'pending';
+      break;
+    case 'ORDER_SHIPPED':
+      orderInfo.orderStatus = 'shipped';
+      orderInfo.status = 'processing';
+      break;
+    case 'ORDER_DELIVERED':
+      orderInfo.orderStatus = 'delivered';
+      orderInfo.status = 'completed';
+      break;
+    case 'ORDER_REFUNDED':
+      orderInfo.orderStatus = 'refunded';
+      orderInfo.status = 'cancelled';
+      break;
+    default:
+      orderInfo.orderStatus = 'paid';
+      orderInfo.status = 'pending';
   }
 
   // Simple item extraction (can be enhanced based on specific email formats)
@@ -409,7 +626,11 @@ function extractOrderFromEmail(emailData) {
   // Try to detect if this is an order email based on keywords
   const orderKeywords = [
     "طلب جديد", "order confirmation", "شكرًا لطلبك", 
-    "تم استلام طلبك", "new order", "order received"
+    "تم استلام طلبك", "new order", "order received",
+    "تأكيد الدفع", "payment confirmation",
+    "تم شحن", "shipped",
+    "تم التسليم", "delivered",
+    "استرداد", "refund"
   ];
   
   const isOrderEmail = orderKeywords.some(keyword => 
@@ -422,7 +643,7 @@ function extractOrderFromEmail(emailData) {
   }
 
   // Only return if we found at least some order information
-  if (orderInfo.orderNumber || orderInfo.customerName || orderInfo.totalAmount) {
+  if (orderInfo.orderNumber || orderInfo.customerName || orderInfo.totalAmount || orderInfo.trackingNumber) {
     return orderInfo;
   }
 
@@ -495,7 +716,7 @@ async function fetchGmailOrdersForUser(userId) {
       userId: "me",
       maxResults: 50,
       labelIds: ["INBOX"],
-      q: "subject:(طلب جديد|order confirmation|شكرًا لطلبك|تم استلام طلبك)"
+      q: "subject:(طلب جديد|order confirmation|شكرًا لطلبك|تم استلام طلبك|تأكيد الدفع|payment confirmation|تم شحن|shipped|تم التسليم|delivered|استرداد|refund)"
     });
 
     if (!response.data.messages || response.data.messages.length === 0) {
@@ -514,24 +735,50 @@ async function fetchGmailOrdersForUser(userId) {
 
         const messageId = msg.data.id;
         
-        const existingOrder = await db.collection("orders")
-          .where("gmailMessageId", "==", messageId)
-          .limit(1)
-          .get();
-
-        if (!existingOrder.empty) continue;
-
+        // Parse email content
         const emailData = parseEmailContent(msg.data);
         const orderInfo = extractOrderFromEmail(emailData);
         
         if (orderInfo) {
-          orderInfo.gmailMessageId = messageId;
-          orderInfo.userId = userId;
-          orderInfo.source = "gmail";
-          orderInfo.createdAt = admin.firestore.FieldValue.serverTimestamp();
-          
-          await db.collection("orders").add(orderInfo);
-          orderCount++;
+          // Check if order already exists by order number to prevent duplicates
+          let existingOrder;
+          if (orderInfo.orderNumber) {
+            existingOrder = await db.collection("orders")
+              .where("userId", "==", userId)
+              .where("orderNumber", "==", orderInfo.orderNumber)
+              .limit(1)
+              .get();
+          }
+
+          if (!existingOrder || existingOrder.empty) {
+            // Create new order
+            orderInfo.gmailMessageId = messageId;
+            orderInfo.userId = userId;
+            orderInfo.source = "gmail";
+            orderInfo.createdAt = admin.firestore.FieldValue.serverTimestamp();
+            
+            await db.collection("orders").add(orderInfo);
+            orderCount++;
+          } else {
+            // Update existing order with new information (lifecycle management)
+            const existingDoc = existingOrder.docs[0];
+            
+            const fieldsToUpdate = {};
+            if (orderInfo.trackingNumber) fieldsToUpdate.trackingNumber = orderInfo.trackingNumber;
+            if (orderInfo.courier) fieldsToUpdate.courier = orderInfo.courier;
+            if (orderInfo.estimatedDeliveryDate) fieldsToUpdate.estimatedDeliveryDate = orderInfo.estimatedDeliveryDate;
+            if (orderInfo.refundAmount > 0) fieldsToUpdate.refundAmount = orderInfo.refundAmount;
+            if (orderInfo.orderStatus) fieldsToUpdate.orderStatus = orderInfo.orderStatus;
+            if (orderInfo.lastEmailTypeSynced) fieldsToUpdate.lastEmailTypeSynced = orderInfo.lastEmailTypeSynced;
+            if (orderInfo.status) fieldsToUpdate.status = orderInfo.status;
+            if (orderInfo.shippingAddress) fieldsToUpdate.shippingAddress = orderInfo.shippingAddress;
+            
+            fieldsToUpdate.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+            fieldsToUpdate.gmailMessageId = messageId;
+
+            await db.collection("orders").doc(existingDoc.id).update(fieldsToUpdate);
+            orderCount++;
+          }
         }
       } catch (error) {
         console.error(`Error processing message ${message.id}:`, error);
