@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار نظام الأدوار</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        .info { background-color: #d1ecf1; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 اختبار نظام الأدوار - مدير النظام vs المشترك</h1>
+    
+    <div class="test-section info">
+        <h2>تعليمات الاختبار:</h2>
+        <ol>
+            <li>افتح وحدة تحكم المتصفح (F12)</li>
+            <li>سجّل الدخول باستخدام بريد المدير: <strong>gar26work@gmail.com</strong></li>
+            <li>راقب الرسائل في console للتأكد من:</li>
+            <ul>
+                <li>✅ قراءة دور المستخدم من Firestore</li>
+                <li>✅ الدور = 'admin'</li>
+                <li>✅ التوجيه إلى صفحة 'admin'</li>
+                <li>✅ إظهار عناصر 'admin-only'</li>
+            </ul>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>اختبار سريع:</h2>
+        <button onclick="checkUserRole()">التحقق من دور المستخدم الحالي</button>
+        <button onclick="forceAdminRedirect()">إجبار التوجيه إلى Admin</button>
+        <button onclick="clearCache()">مسح الذاكرة المؤقتة</button>
+        <pre id="output"></pre>
+    </div>
+
+    <script type="module">
+        // دالة للتحقق من دور المستخدم
+        window.checkUserRole = async function() {
+            const output = document.getElementById('output');
+            output.textContent = 'جاري التحقق...\n';
+            
+            try {
+                const firebase = window.firebase;
+                const auth = firebase.auth();
+                const db = firebase.firestore();
+                
+                const user = auth.currentUser;
+                if (!user) {
+                    output.textContent += '❌ لا يوجد مستخدم مسجل الدخول';
+                    return;
+                }
+                
+                output.textContent += `✅ المستخدم: ${user.email}\n`;
+                output.textContent += `✅ UID: ${user.uid}\n`;
+                
+                // قراءة بيانات المستخدم من Firestore
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    output.textContent += `✅ الدور المخزن: ${data.role || 'غير محدد'}\n`;
+                    output.textContent += `✅ البيانات الكاملة: ${JSON.stringify(data, null, 2)}\n`;
+                    
+                    if (data.role === 'admin') {
+                        output.textContent += '\n🎉 المستخدم هو مدير نظام!\n';
+                    } else {
+                        output.textContent += '\n⚠️ المستخدم ليس مديراً!\n';
+                    }
+                } else {
+                    output.textContent += '❌ مستند المستخدم غير موجود في Firestore\n';
+                }
+            } catch (error) {
+                output.textContent += `❌ خطأ: ${error.message}\n`;
+                console.error('Error:', error);
+            }
+        };
+        
+        // دالة لإجبار التوجيه
+        window.forceAdminRedirect = function() {
+            window.location.hash = '#admin';
+            document.getElementById('output').textContent += '\n➡️ تم التوجيه إلى #admin\n';
+        };
+        
+        // دالة لمسح الذاكرة المؤقتة
+        window.clearCache = function() {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.getElementById('output').textContent += '\n🗑️ تم مسح الذاكرة المؤقتة\n';
+        };
+    </script>
+</body>
+</html>

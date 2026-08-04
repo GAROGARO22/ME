@@ -1,6 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // دوال مساعدة للتحقق من الصلاحيات
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -10,51 +12,69 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // نتحقق أولاً من وجود مستند المستخدم ثم نتحقق من دوره
+      let userPath = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(userPath) && 
+             get(userPath).data.role == 'admin';
     }
 
+    // ==========================================
+    // قاعدة بيانات المستخدمين
+    // ==========================================
     match /users/{userId} {
+      // أي مستخدم مصادق يمكنه قراءة بياناته أو بياناته إذا كان مديرًا
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      // المستخدم يمكنه إنشاء مستنده الخاص فقط
       allow create: if isAuthenticated() && isOwner(userId);
+      // المستخدم يمكنه تحديث بياناته، والمدير يمكنه تحديث أي مستخدم
       allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      // فقط المدير يمكنه حذف المستخدمين
       allow delete: if isAuthenticated() && isAdmin();
+      
+      // ==========================================
+      // المجموعات الفرعية داخل كل مستخدم (عملاء، طلبات، إلخ)
+      // ==========================================
+      match /{document=**} {
+        // المشترك يمكنه القراءة والكتابة فقط في مجلده الخاص
+        allow read, write: if isAuthenticated() && isOwner(userId);
+      }
     }
 
-    match /users/{userId}/{document=**} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
+    // ==========================================
+    // الطلبات العامة (إذا وجدت خارج مجلدات المستخدمين)
+    // ==========================================
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
-    match /users/{userId}/customers/{customerId} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update, delete: if isAuthenticated() && isOwner(userId);
-    }
-
-    match /users/{userId}/orders/{orderId} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-      allow create: if isAuthenticated() && isOwner(userId);
-      allow update, delete: if isAuthenticated() && isOwner(userId);
-    }
-
-    match /users/{userId}/notifications/{notificationId} {
-      allow read, write: if isAuthenticated() && isOwner(userId);
-    }
-
+    // ==========================================
+    // الاشتراكات - يقرأها الجميع ويكتبها المدير فقط
+    // ==========================================
     match /subscriptions/{subscriptionId} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && isAdmin();
     }
 
+    // ==========================================
+    // إعدادات البريد الإلكتروني - خاصة بكل مستخدم
+    // ==========================================
     match /emailConfigs/{userId} {
       allow read, write: if isAuthenticated() && isOwner(userId);
     }
 
+    // ==========================================
+    // سجل العمليات - للمدير فقط
+    // ==========================================
     match /operationsLog/{logId} {
       allow read, list: if isAuthenticated() && isAdmin();
       allow write: if isAuthenticated() && isAdmin();
     }
 
+    // ==========================================
+    // الإعدادات العامة - القراءة للجميع والكتابة للمدير
+    // ==========================================
     match /settings/{settingId} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && isAdmin();
