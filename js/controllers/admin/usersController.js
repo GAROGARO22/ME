@@ -1,4 +1,6 @@
 export async function initUsersController({ app }) {
+  console.log('Users Controller initialized | Is Admin:', app.isAdmin);
+  
   // التحقق من صلاحيات المدير
   if (!app.isAdmin) {
     const content = document.getElementById('appContent');
@@ -11,19 +13,24 @@ export async function initUsersController({ app }) {
         </div>
       `;
     }
+    console.warn('User is not admin, access denied');
     return;
   }
   
   try {
+    console.log('Loading users from Firestore...');
     // تحميل بيانات المستخدمين من Firestore
     const snapshot = await app.db.collection('users').get();
     const users = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    console.log('Loaded', users.length, 'users');
     
     // تحديث الإحصائيات في البطاقات
     const totalUsers = users.length;
     const activeUsers = users.filter((u) => u.isActive !== false).length;
     const adminUsers = users.filter((u) => u.role === 'admin').length;
     const subscribedUsers = users.filter((u) => u.subscription && u.subscription !== 'free').length;
+    
+    console.log('Stats - Total:', totalUsers, 'Active:', activeUsers, 'Admins:', adminUsers, 'Subscribed:', subscribedUsers);
     
     // تحديث عناصر الإحصائيات
     updateStatElement('statTotalUsers', totalUsers);
