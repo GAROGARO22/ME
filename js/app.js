@@ -84,8 +84,22 @@ async function ensureUserDoc(user) {
   if (!db || !user?.uid) return { role: 'subscriber', isActive: true };
   const userRef = db.collection('users').doc(user.uid);
   const snap = await userRef.get();
-  if (snap.exists) return snap.data();
-
+  
+  // إذا كان المستند موجودًا، نرجع البيانات كما هي
+  if (snap.exists) {
+    const data = snap.data();
+    // نتحقق من أن الدور موجود وصحيح
+    if (!data.role) {
+      // إذا لم يكن هناك دور، نحدده بناءً على البريد الإلكتروني
+      const FALLBACK_ADMIN_EMAILS = ['gar26work@gmail.com'];
+      const role = FALLBACK_ADMIN_EMAILS.includes(user.email) ? 'admin' : 'subscriber';
+      await userRef.update({ role });
+      return { ...data, role };
+    }
+    return data;
+  }
+  
+  // إذا لم يكن المستند موجودًا، ننشئه مع تحديد الدور بناءً على البريد الإلكتروني
   const FALLBACK_ADMIN_EMAILS = ['gar26work@gmail.com'];
   const role = FALLBACK_ADMIN_EMAILS.includes(user.email) ? 'admin' : 'subscriber';
   const initialData = {
@@ -110,6 +124,7 @@ async function applyAuthUi(user) {
   const mainApp = document.getElementById('mainApp');
   const userName = document.getElementById('userName');
   const adminElements = document.querySelectorAll('.admin-only');
+  const subscriberElements = document.querySelectorAll('.subscriber-only');
 
   if (!user) {
     setAppState(null, null);
@@ -126,6 +141,8 @@ async function applyAuthUi(user) {
   let userDataDoc = { role: 'subscriber', isActive: true };
   try {
     userDataDoc = await ensureUserDoc(user);
+    console.log('📋 بيانات المستخدم:', userDataDoc);
+    console.log('🔑 دور المستخدم:', userDataDoc.role);
   } catch (error) {
     console.error('Error loading user permissions:', error);
     app.showNotification('خطأ في تحميل بيانات المستخدم', 'warning');
@@ -145,16 +162,50 @@ async function applyAuthUi(user) {
   mainApp?.classList.remove('d-none');
   if (userName) userName.textContent = fullUserData.name || user.email || 'مستخدم';
 
+  // إدارة ظهور العناصر بناءً على الدور
+  console.log('🎭 تطبيق الصلاحيات - الدور:', role);
   adminElements.forEach((el) => {
     if (role === 'admin') {
+      el.classList.remove('d-none');
+      console.log('✅ إظهار عنصر للمدير:', el);
+    } else {
+      el.classList.add('d-none');
+    }
+  });
+
+  // إدارة ظهور عناصر المشتركين
+  subscriberElements.forEach((el) => {
+    if (role === 'subscriber') {
       el.classList.remove('d-none');
     } else {
       el.classList.add('d-none');
     }
   });
 
+  // توجيه المدير إلى لوحة إدارة النظام مباشرة بدلاً من dashboard
   const hashRoute = window.location.hash.replace('#', '');
-  const targetRoute = role === 'admin' ? (hashRoute || 'admin') : (hashRoute || 'dashboard');
+  let targetRoute;
+  
+  console.log('🧭 التوجيه - المسار الحالي:', hashRoute, 'الدور:', role);
+  
+  if (role === 'admin') {
+    // إذا لم يكن هناك route محدد أو كان dashboard، وجّه إلى admin
+    if (!hashRoute || hashRoute === 'dashboard') {
+      targetRoute = 'admin';
+      console.log('➡️ توجيه المدير إلى:', targetRoute);
+    } else {
+      targetRoute = hashRoute;
+    }
+  } else {
+    // المشترك لا يمكنه الوصول إلى admin
+    if (hashRoute === 'admin') {
+      targetRoute = 'dashboard';
+      console.log('➡️ منع المشترك من admin وتوجيهه إلى:', targetRoute);
+    } else {
+      targetRoute = hashRoute || 'dashboard';
+    }
+  }
+  
   history.pushState({}, '', `#${targetRoute}`);
   await renderRoute(targetRoute);
 }
@@ -369,6 +420,27 @@ function updateActiveNav(page) {
   if (activeLink?.closest('li')) {
     activeLink.closest('li').classList.add('active');
   }
+  
+  // تحديث ظهور العناصر بناءً على الدور عند التنقل
+  const role = userData?.role || 'subscriber';
+  const adminElements = document.querySelectorAll('.admin-only');
+  const subscriberElements = document.querySelectorAll('.subscriber-only');
+  
+  adminElements.forEach((el) => {
+    if (role === 'admin') {
+      el.classList.remove('d-none');
+    } else {
+      el.classList.add('d-none');
+    }
+  });
+  
+  subscriberElements.forEach((el) => {
+    if (role === 'subscriber') {
+      el.classList.remove('d-none');
+    } else {
+      el.classList.add('d-none');
+    }
+  });
 }
 
 async function ensureAdminAccess() {
@@ -398,11 +470,21 @@ async function renderRoute(routeName) {
   };
 
   const normalizedPage = routeName || 'dashboard';
-  const route = routes[normalizedPage] || routes.dashboard;
-
-  if (normalizedPage === 'admin' && !(await ensureAdminAccess())) {
-    return;
+  
+  // منع المشترك من الوصول إلى صفحات الأدمن
+  if (normalizedPage === 'admin') {
+    if (!(await ensureAdminAccess())) {
+      return;
+    }
   }
+  
+  // منع المدير من الوصول إلى صفحات المشتركين (اختياري - يمكن إزالته إذا أردت السماح للمدير برؤية كل شيء)
+  if (userData?.role === 'admin' && ['dashboard', 'customers', 'orders', 'reports'].includes(normalizedPage)) {
+    // نسمح للمدير بالوصول لكن نوجهه إلى لوحة التحكم الخاصة به
+    // أو يمكننا منعه تماماً حسب الرغبة
+  }
+
+  const route = routes[normalizedPage] || routes.dashboard;
 
   try {
     const response = await fetch(route.view);
@@ -428,8 +510,7 @@ async function renderRoute(routeName) {
 }
 
 function setupRouter() {
-  const initialPage = window.location.hash.replace('#', '') || 'dashboard';
-  renderRoute(initialPage);
+  // لا نقوم بالتوجيه الأولي هنا - سيتم ذلك بعد معرفة دور المستخدم في applyAuthUi
   window.addEventListener('popstate', () => {
     const page = window.location.hash.replace('#', '') || 'dashboard';
     renderRoute(page);
