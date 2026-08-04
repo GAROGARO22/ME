@@ -11,7 +11,7 @@ class GmailIntegration {
   constructor() {
     this.functions = getFunctions();
     this.CLIENT_ID = "669970676844-q2tnngthukfnecnovr25vcpd172ov7vk.apps.googleusercontent.com"; // Replace with your actual Client ID
-    this.REDIRECT_URI = window.location.origin + "https://me-mu-azure.vercel.app/gmail-callback.html";
+    this.REDIRECT_URI = window.location.origin + "/gmail-callback.html";
     this.SCOPES = [
       "https://www.googleapis.com/auth/gmail.readonly",
       "https://www.googleapis.com/auth/gmail.modify",
@@ -166,3 +166,48 @@ class GmailIntegration {
 // Export singleton instance
 export const gmailIntegration = new GmailIntegration();
 export default gmailIntegration;
+
+/**
+ * Classify SHEIN email type based on subject line
+ * @param {string} subject - Email subject line
+ * @returns {string} - Email type classification
+ */
+export function classifySheinEmail(subject) {
+  if (!subject) return 'UNKNOWN';
+  
+  const lowerSubject = subject.toLowerCase();
+  
+  // Payment Confirmation
+  if (lowerSubject.includes('تأكيد الدفع') || 
+      lowerSubject.includes('payment confirmation') ||
+      lowerSubject.includes('تم تأكيد طلبك') ||
+      lowerSubject.includes('order confirmed')) {
+    return 'PAYMENT_CONFIRMATION';
+  }
+  
+  // Order Shipped
+  if (lowerSubject.includes('تم شحن طلبك') || 
+      lowerSubject.includes('shipped') ||
+      lowerSubject.includes('طلبك في الطريق') ||
+      lowerSubject.includes('on the way')) {
+    return 'ORDER_SHIPPED';
+  }
+  
+  // Order Delivered
+  if (lowerSubject.includes('إشعار بتسليم الطلب') || 
+      lowerSubject.includes('delivered') ||
+      lowerSubject.includes('تم التسليم') ||
+      lowerSubject.includes('تم استلام طلبك')) {
+    return 'ORDER_DELIVERED';
+  }
+  
+  // Refund Confirmation
+  if (lowerSubject.includes('قبول طلب سحب المبلغ') || 
+      lowerSubject.includes('refund') ||
+      lowerSubject.includes('استرداد المبلغ') ||
+      lowerSubject.includes('return approved')) {
+    return 'ORDER_REFUNDED';
+  }
+  
+  return 'UNKNOWN';
+}
