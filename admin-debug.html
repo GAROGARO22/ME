@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تصحيح مشكلة الأدمن</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; direction: rtl; }
+        .status { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 أداة تصحيح صلاحيات الأدمن</h1>
+    
+    <div class="status" id="status">
+        <p>اضغط على "تسجيل الدخول" للبدء...</p>
+    </div>
+    
+    <button onclick="login()">📧 تسجيل الدخول بجوجل</button>
+    <button onclick="checkUser()">🔍 فحص المستخدم وقاعدة البيانات</button>
+    <button onclick="fixAdminRole()">🔧 إصلاح صلاحية الأدمن</button>
+    <button onclick="logout()">🚪 خروج</button>
+    <button onclick="clearCache()">🗑️ مسح الكاش</button>
+    
+    <hr>
+    <h3>التعليمات:</h3>
+    <ol>
+        <li>سجل الدخول باستخدام بريد الأدمن (<code>gar26work@gmail.com</code>)</li>
+        <li>اضغط "فحص المستخدم" لمعرفة الدور الحالي في قاعدة البيانات</li>
+        <li>إذا كان الدور ليس "admin"، اضغط "إصلاح صلاحية الأدمن"</li>
+        <li>أعد تحميل الصفحة الرئيسية بعد الإصلاح</li>
+    </ol>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: 'AIzaSyATErm0RWNW9QTgne2lzk4t-HQEIRRitDA',
+            authDomain: 'mia3raj.firebaseapp.com',
+            projectId: 'mia3raj',
+            storageBucket: 'mia3raj.firebasestorage.app',
+            messagingSenderId: '618757631405',
+            appId: '1:618757631405:web:4deb8767bb84c4e07c0524',
+            measurementId: 'G-Z1VQ0GY9C3'
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        const FALLBACK_ADMIN_EMAILS = ['gar26work@gmail.com'];
+        
+        function log(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            statusDiv.innerHTML += `<p class="${className}">${message}</p>`;
+            console.log(message);
+        }
+        
+        async function login() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                log(`✅ تم تسجيل الدخول: ${result.user.email}`, 'success');
+                checkUser();
+            } catch (e) {
+                log(`❌ خطأ في تسجيل الدخول: ${e.message}`, 'error');
+            }
+        }
+        
+        async function checkUser() {
+            const user = auth.currentUser;
+            if (!user) {
+                log('⚠️ لم يتم تسجيل الدخول', 'warning');
+                return;
+            }
+            
+            log(`<strong>📧 البريد:</strong> ${user.email}`);
+            log(`<strong>🆔 UID:</strong> ${user.uid}`);
+            log(`<strong>🎯 متوقع أن يكون أدمن:</strong> ${FALLBACK_ADMIN_EMAILS.includes(user.email) ? 'نعم ✅' : 'لا ❌'}`, 
+                FALLBACK_ADMIN_EMAILS.includes(user.email) ? 'success' : 'warning');
+            
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    log(`<hr><strong>📊 بيانات المستند في Firestore:</strong>`);
+                    log(`<strong>الدور الحالي:</strong> <span style="color:${data.role === 'admin' ? 'green' : 'red'}">${data.role || 'غير محدد'}</span>`);
+                    log(`<strong>الحالة:</strong> ${data.isActive ? 'نشط ✅' : 'غير نشط ❌'}`);
+                    log(`<strong>الاشتراك:</strong> ${data.subscription || 'غير محدد'}`);
+                    
+                    if (FALLBACK_ADMIN_EMAILS.includes(user.email) && data.role !== 'admin') {
+                        log(`<hr>⚠️ <strong>مشكلة مكتشفة!</strong> البريد من قائمة الأدمن لكن الدور ليس "admin"`, 'warning');
+                        log('اضغط على "إصلاح صلاحية الأدمن" لحل المشكلة', 'warning');
+                    } else if (data.role === 'admin') {
+                        log(`<hr>✅ <strong>كل شيء صحيح!</strong> المستخدم لديه صلاحية أدمن`, 'success');
+                    }
+                } else {
+                    log('⚠️ لا يوجد مستند للمستخدم في قاعدة البيانات!', 'warning');
+                    log('سيتم إنشاء المستند تلقائياً عند أول دخول', 'info');
+                }
+            } catch (e) {
+                log(`❌ خطأ في القراءة من Firestore: ${e.message}`, 'error');
+            }
+        }
+        
+        async function fixAdminRole() {
+            const user = auth.currentUser;
+            if (!user) {
+                log('⚠️ لم يتم تسجيل الدخول', 'warning');
+                return;
+            }
+            
+            if (!FALLBACK_ADMIN_EMAILS.includes(user.email)) {
+                log('⚠️ هذا البريد ليس في قائمة الأدمن المعتمدة', 'warning');
+                return;
+            }
+            
+            try {
+                await db.collection('users').doc(user.uid).set({
+                    role: 'admin',
+                    email: user.email,
+                    isActive: true
+                }, { merge: true });
+                
+                log('✅ تم تحديث دور المستخدم إلى "admin" بنجاح!', 'success');
+                checkUser();
+            } catch (e) {
+                log(`❌ خطأ في التحديث: ${e.message}`, 'error');
+            }
+        }
+        
+        function logout() {
+            auth.signOut().then(() => {
+                log('✅ تم تسجيل الخروج', 'success');
+                document.getElementById('status').innerHTML = '<p>اضغط على "تسجيل الدخول" للبدء...</p>';
+            });
+        }
+        
+        function clearCache() {
+            localStorage.clear();
+            sessionStorage.clear();
+            log('✅ تم مسح الكاش، يرجى إعادة تحميل الصفحة', 'success');
+        }
+        
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                log(`👤 متصل: ${user.email}`, 'success');
+            }
+        });
+    </script>
+</body>
+</html>

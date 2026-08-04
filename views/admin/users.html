@@ -1,92 +1,203 @@
 <div class="container-fluid py-4">
+  <!-- رأس الصفحة -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-      <h3 class="fw-bold mb-1">لوحة إدارة النظام</h3>
-      <p class="text-muted mb-0">إدارة المستخدمين، الاشتراكات، السجل، والإعدادات من مكان واحد.</p>
+      <h3 class="fw-bold mb-1 text-primary">
+        <i class="fas fa-shield-alt me-2"></i>لوحة إدارة النظام
+      </h3>
+      <p class="text-muted mb-0">إدارة متكاملة للمستخدمين، الاشتراكات، العمليات، وإعدادات النظام</p>
     </div>
-    <span class="badge bg-warning text-dark">مدير نظام</span>
-  </div>
-
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="text-muted small">إجمالي المستخدمين</div>
-          <div id="adminUsersCount" class="fs-3 fw-bold">0</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="text-muted small">المستخدمون النشطون</div>
-          <div id="adminActiveUsersCount" class="fs-3 fw-bold">0</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="text-muted small">المدراء</div>
-          <div id="adminAdminCount" class="fs-3 fw-bold">0</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <div class="text-muted small">الاشتراكات الحالية</div>
-          <div id="adminSubscriptionCount" class="fs-3 fw-bold">0</div>
-        </div>
-      </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" onclick="location.reload()">
+        <i class="fas fa-sync-alt me-1"></i> تحديث
+      </button>
+      <span class="badge bg-warning text-dark px-3 py-2 fs-6">
+        <i class="fas fa-crown me-1"></i> مدير نظام
+      </span>
     </div>
   </div>
+  
+  <!-- بطاقات الإحصائيات -->
+  <div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card-body text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="mb-1 opacity-75"><i class="fas fa-users me-1"></i> إجمالي المستخدمين</p>
+              <h3 class="fw-bold mb-0" id="statTotalUsers">0</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded-circle p-3">
+              <i class="fas fa-users fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <div class="card-body text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="mb-1 opacity-75"><i class="fas fa-user-check me-1"></i> المستخدمون النشطون</p>
+              <h3 class="fw-bold mb-0" id="statActiveUsers">0</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded-circle p-3">
+              <i class="fas fa-user-check fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <div class="card-body text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="mb-1 opacity-75"><i class="fas fa-user-shield me-1"></i> المدراء</p>
+              <h3 class="fw-bold mb-0" id="statAdmins">0</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded-circle p-3">
+              <i class="fas fa-user-shield fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+        <div class="card-body text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <p class="mb-1 opacity-75"><i class="fas fa-star me-1"></i> الاشتراكات المميزة</p>
+              <h3 class="fw-bold mb-0" id="statSubscriptions">0</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded-circle p-3">
+              <i class="fas fa-star fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- بطاقة المحتوى الرئيسي -->
   <div class="card border-0 shadow-sm">
-    <div class="card-body">
-      <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item">
-          <button class="nav-link active" type="button" data-admin-tab="users">المستخدمين</button>
+    <div class="card-header bg-white border-0 py-3">
+      <!-- أزرار التنقل -->
+      <ul class="nav nav-pills" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active px-4" id="users-tab" type="button" data-bs-toggle="pill" data-bs-target="#usersPane" role="tab">
+            <i class="fas fa-users me-2"></i>المستخدمين
+          </button>
         </li>
-        <li class="nav-item">
-          <button class="nav-link" type="button" data-admin-tab="subscriptions">الاشتراكات</button>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link px-4" id="subscriptions-tab" type="button" data-bs-toggle="pill" data-bs-target="#subscriptionsPane" role="tab">
+            <i class="fas fa-crown me-2"></i>الاشتراكات والخطط
+          </button>
         </li>
-        <li class="nav-item">
-          <button class="nav-link" type="button" data-admin-tab="operations">السجل والعمليات</button>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link px-4" id="operations-tab" type="button" data-bs-toggle="pill" data-bs-target="#operationsPane" role="tab">
+            <i class="fas fa-history me-2"></i>سجل العمليات
+          </button>
         </li>
-        <li class="nav-item">
-          <button class="nav-link" type="button" data-admin-tab="settings">الإعدادات</button>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link px-4" id="settings-tab" type="button" data-bs-toggle="pill" data-bs-target="#settingsPane" role="tab">
+            <i class="fas fa-cog me-2"></i>الإعدادات
+          </button>
         </li>
       </ul>
-
-      <div class="tab-content mt-3">
-        <div class="admin-tab-pane" id="usersPane">
+    </div>
+    
+    <div class="card-body">
+      <div class="tab-content" id="adminTabContent">
+        <!-- تبويب المستخدمين -->
+        <div class="tab-pane fade show active" id="usersPane" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex gap-2">
+              <div class="input-group" style="max-width: 300px;">
+                <span class="input-group-text bg-light border-0">
+                  <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" class="form-control bg-light border-0" id="userSearchInput" placeholder="بحث عن مستخدم...">
+              </div>
+              <select class="form-select bg-light border-0" id="userFilterRole" style="max-width: 150px;">
+                <option value="">كل الأدوار</option>
+                <option value="admin">مدير</option>
+                <option value="subscriber">مشترك</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="addUserBtn">
+              <i class="fas fa-plus me-1"></i> إضافة مستخدم
+            </button>
+          </div>
+          
           <div class="table-responsive">
             <table class="table table-hover align-middle">
-              <thead>
+              <thead class="bg-light">
                 <tr>
-                  <th>الاسم</th>
-                  <th>البريد</th>
+                  <th width="50"><input type="checkbox" class="form-check-input" id="selectAllUsers"></th>
+                  <th>المستخدم</th>
+                  <th>البريد الإلكتروني</th>
                   <th>الدور</th>
                   <th>الاشتراك</th>
                   <th>الحالة</th>
+                  <th>تاريخ الانضمام</th>
+                  <th width="150">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody id="adminUsersTable"></tbody>
+              <tbody id="adminUsersTable">
+                <tr>
+                  <td colspan="8" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                    <p class="text-muted mt-2">جاري تحميل بيانات المستخدمين...</p>
+                  </td>
+                </tr>
+              </tbody>
             </table>
+          </div>
+          
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted" id="usersCountLabel">عرض 0 من 0 مستخدم</small>
+            <nav>
+              <ul class="pagination pagination-sm mb-0" id="usersPagination"></ul>
+            </nav>
           </div>
         </div>
 
-        <div class="admin-tab-pane d-none" id="subscriptionsPane">
-          <div id="adminSubscriptionsContent"></div>
+        <!-- تبويب الاشتراكات -->
+        <div class="tab-pane fade" id="subscriptionsPane" role="tabpanel">
+          <div id="adminSubscriptionsContent">
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="text-muted mt-2">جاري تحميل بيانات الاشتراكات...</p>
+            </div>
+          </div>
         </div>
 
-        <div class="admin-tab-pane d-none" id="operationsPane">
-          <div id="adminOperationsContent"></div>
+        <!-- تبويب سجل العمليات -->
+        <div class="tab-pane fade" id="operationsPane" role="tabpanel">
+          <div id="adminOperationsContent">
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="text-muted mt-2">جاري تحميل سجل العمليات...</p>
+            </div>
+          </div>
         </div>
 
-        <div class="admin-tab-pane d-none" id="settingsPane">
-          <div id="adminSettingsContent"></div>
+        <!-- تبويب الإعدادات -->
+        <div class="tab-pane fade" id="settingsPane" role="tabpanel">
+          <div id="adminSettingsContent">
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="text-muted mt-2">جاري تحميل الإعدادات...</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

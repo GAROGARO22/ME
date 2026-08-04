@@ -84,7 +84,18 @@ async function ensureUserDoc(user) {
   if (!db || !user?.uid) return { role: 'subscriber', isActive: true };
   const userRef = db.collection('users').doc(user.uid);
   const snap = await userRef.get();
-  if (snap.exists) return snap.data();
+  
+  if (snap.exists) {
+    const data = snap.data();
+    // تحقق إضافي: إذا كان البريد في قائمة الأدمن لكن الدور ليس admin، قم بتحديثه
+    const FALLBACK_ADMIN_EMAILS = ['gar26work@gmail.com'];
+    if (FALLBACK_ADMIN_EMAILS.includes(user.email) && data.role !== 'admin') {
+      console.log('Updating user role to admin for:', user.email);
+      await userRef.update({ role: 'admin' });
+      return { ...data, role: 'admin' };
+    }
+    return data;
+  }
 
   const FALLBACK_ADMIN_EMAILS = ['gar26work@gmail.com'];
   const role = FALLBACK_ADMIN_EMAILS.includes(user.email) ? 'admin' : 'subscriber';
@@ -145,16 +156,22 @@ async function applyAuthUi(user) {
   mainApp?.classList.remove('d-none');
   if (userName) userName.textContent = fullUserData.name || user.email || 'مستخدم';
 
+  // تحديث عناصر الأدمن BEFORE rendering the route
   adminElements.forEach((el) => {
     if (role === 'admin') {
       el.classList.remove('d-none');
+      console.log('Admin element shown:', el);
     } else {
       el.classList.add('d-none');
     }
   });
 
+  // Determine the route based on role
   const hashRoute = window.location.hash.replace('#', '');
   const targetRoute = role === 'admin' ? (hashRoute || 'admin') : (hashRoute || 'dashboard');
+  
+  console.log('User role:', role, '| Target route:', targetRoute, '| Is Admin:', app.isAdmin);
+  
   history.pushState({}, '', `#${targetRoute}`);
   await renderRoute(targetRoute);
 }
@@ -388,6 +405,8 @@ async function renderRoute(routeName) {
   const content = document.getElementById('appContent');
   if (!content) return;
 
+  console.log('Rendering route:', routeName, '| Is Admin:', app.isAdmin);
+
   const routes = {
     dashboard: { view: 'views/dashboard.html', controller: initDashboardController },
     customers: { view: 'views/customers.html', controller: initCustomersController },
@@ -413,10 +432,12 @@ async function renderRoute(routeName) {
     content.innerHTML = html;
 
     if (route.controller) {
+      console.log('Initializing controller for:', normalizedPage);
       route.controller({ app });
     }
 
     if (normalizedPage === 'admin') {
+      console.log('Initializing admin controllers...');
       initSubscriptionsController({ app });
       initOperationsController({ app });
       initSettingsController({ app });
