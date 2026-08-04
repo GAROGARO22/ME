@@ -663,3 +663,9 @@ html[dir="rtl"] {
 .meraj-icon-glow {
     text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
 }
+
+/* Role-based visibility classes */
+.admin-only.d-none,
+.subscriber-only.d-none {
+    display: none !important;
+}

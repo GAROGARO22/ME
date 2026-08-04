@@ -110,6 +110,7 @@ async function applyAuthUi(user) {
   const mainApp = document.getElementById('mainApp');
   const userName = document.getElementById('userName');
   const adminElements = document.querySelectorAll('.admin-only');
+  const subscriberElements = document.querySelectorAll('.subscriber-only');
 
   if (!user) {
     setAppState(null, null);
@@ -145,6 +146,7 @@ async function applyAuthUi(user) {
   mainApp?.classList.remove('d-none');
   if (userName) userName.textContent = fullUserData.name || user.email || 'مستخدم';
 
+  // إدارة ظهور العناصر بناءً على الدور
   adminElements.forEach((el) => {
     if (role === 'admin') {
       el.classList.remove('d-none');
@@ -153,8 +155,35 @@ async function applyAuthUi(user) {
     }
   });
 
+  // إدارة ظهور عناصر المشتركين
+  subscriberElements.forEach((el) => {
+    if (role === 'subscriber') {
+      el.classList.remove('d-none');
+    } else {
+      el.classList.add('d-none');
+    }
+  });
+
+  // توجيه المدير إلى لوحة إدارة النظام مباشرة بدلاً من dashboard
   const hashRoute = window.location.hash.replace('#', '');
-  const targetRoute = role === 'admin' ? (hashRoute || 'admin') : (hashRoute || 'dashboard');
+  let targetRoute;
+  
+  if (role === 'admin') {
+    // إذا لم يكن هناك route محدد أو كان dashboard، وجّه إلى admin
+    if (!hashRoute || hashRoute === 'dashboard') {
+      targetRoute = 'admin';
+    } else {
+      targetRoute = hashRoute;
+    }
+  } else {
+    // المشترك لا يمكنه الوصول إلى admin
+    if (hashRoute === 'admin') {
+      targetRoute = 'dashboard';
+    } else {
+      targetRoute = hashRoute || 'dashboard';
+    }
+  }
+  
   history.pushState({}, '', `#${targetRoute}`);
   await renderRoute(targetRoute);
 }
@@ -369,6 +398,27 @@ function updateActiveNav(page) {
   if (activeLink?.closest('li')) {
     activeLink.closest('li').classList.add('active');
   }
+  
+  // تحديث ظهور العناصر بناءً على الدور عند التنقل
+  const role = userData?.role || 'subscriber';
+  const adminElements = document.querySelectorAll('.admin-only');
+  const subscriberElements = document.querySelectorAll('.subscriber-only');
+  
+  adminElements.forEach((el) => {
+    if (role === 'admin') {
+      el.classList.remove('d-none');
+    } else {
+      el.classList.add('d-none');
+    }
+  });
+  
+  subscriberElements.forEach((el) => {
+    if (role === 'subscriber') {
+      el.classList.remove('d-none');
+    } else {
+      el.classList.add('d-none');
+    }
+  });
 }
 
 async function ensureAdminAccess() {
@@ -398,11 +448,21 @@ async function renderRoute(routeName) {
   };
 
   const normalizedPage = routeName || 'dashboard';
-  const route = routes[normalizedPage] || routes.dashboard;
-
-  if (normalizedPage === 'admin' && !(await ensureAdminAccess())) {
-    return;
+  
+  // منع المشترك من الوصول إلى صفحات الأدمن
+  if (normalizedPage === 'admin') {
+    if (!(await ensureAdminAccess())) {
+      return;
+    }
   }
+  
+  // منع المدير من الوصول إلى صفحات المشتركين (اختياري - يمكن إزالته إذا أردت السماح للمدير برؤية كل شيء)
+  if (userData?.role === 'admin' && ['dashboard', 'customers', 'orders', 'reports'].includes(normalizedPage)) {
+    // نسمح للمدير بالوصول لكن نوجهه إلى لوحة التحكم الخاصة به
+    // أو يمكننا منعه تماماً حسب الرغبة
+  }
+
+  const route = routes[normalizedPage] || routes.dashboard;
 
   try {
     const response = await fetch(route.view);
